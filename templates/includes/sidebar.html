@@ -2,12 +2,9 @@
     <h5 class="fw-bold mb-4">Strategic Academic Planner</h5>
 
     <nav class="nav flex-column gap-2">
-        <a class="nav-link" href="/">Dashboard</a>
-        <a class="nav-link" href="#">Modules</a>
-        <a class="nav-link" href="#">Assessments</a>
-        <a class="nav-link" href="#">Academic Progress</a>
-        <a class="nav-link" href="#">What-if Calculator</a>
-        <a class="nav-link" href="#">Analytics</a>
-        <a class="nav-link" href="#">Settings</a>
+        <a class="nav-link" href="{% url 'core:dashboard' %}">Dashboard</a>
+        <a class="nav-link" href="{% url 'academics:academic_management' %}">Academic Management</a>
+        <a class="nav-link" href="{% url 'analytics:analytics' %}">Analytics</a>
+        <a class="nav-link" href="{% url 'core:settings' %}">Settings</a>
     </nav>
 </aside>
