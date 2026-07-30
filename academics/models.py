@@ -18,7 +18,14 @@ class Module(models.Model):
     module_code = models.CharField(max_length=20)
     module_name = models.CharField(max_length=100)
     credits = models.PositiveIntegerField(default=20)
-    target_grade = models.CharField(max_length=10, blank=True)
+
+    target_grade = models.DecimalField(
+    max_digits=5,
+    decimal_places=2,
+    null=True,
+    blank=True
+)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -63,8 +70,6 @@ class Assessment(models.Model):
     deadline = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     raw_score = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    weighted_score = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    graded_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

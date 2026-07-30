@@ -18,6 +18,10 @@ staticfiles/
 .vscode/
 .idea/
 
+# Local configuration files
+.agents/
+.codex/
+
 # OS
 .DS_Store
 Thumbs.db

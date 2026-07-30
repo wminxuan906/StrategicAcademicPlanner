@@ -3,7 +3,11 @@
 
     <nav class="nav flex-column gap-2">
         <a class="nav-link" href="{% url 'core:dashboard' %}">Dashboard</a>
-        <a class="nav-link" href="{% url 'academics:academic_management' %}">Academic Management</a>
+        <a class="nav-link" href="{% url 'academics:semester_list' %}">Semesters</a>
+        <span class="nav-link text-muted">Modules</span>
+        <span class="nav-link text-muted">Assessments</span>
+        <span class="nav-link text-muted">Grade Tracking</span>
+        <span class="nav-link text-muted">What-if Calculator</span>
         <a class="nav-link" href="{% url 'analytics:analytics' %}">Analytics</a>
         <a class="nav-link" href="{% url 'core:settings' %}">Settings</a>
     </nav>
