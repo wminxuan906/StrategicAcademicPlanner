@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if module %}
+Edit Module
+{% else %}
+Add Module
+{% endif %}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-7">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body p-4">
+
+                <h2 class="fw-bold mb-1">
+
+                    {% if module %}
+                        Edit Module
+                    {% else %}
+                        Add Module
+                    {% endif %}
+
+                </h2>
+
+                <p class="text-muted mb-4">
+
+                    {% if module %}
+                        Update the module information below.
+                    {% else %}
+                        Add a module to one of your academic semesters.
+                    {% endif %}
+
+                </p>
+
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+
+                        <div class="alert alert-danger">
+
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="mb-3">
+
+                        <label for="{{ form.semester.id_for_label }}"
+                               class="form-label">
+
+                            Semester
+
+                        </label>
+
+                        {{ form.semester }}
+
+                        {% for error in form.semester.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label for="{{ form.module_code.id_for_label }}"
+                               class="form-label">
+
+                            Module Code
+
+                        </label>
+
+                        {{ form.module_code }}
+
+                        {% for error in form.module_code.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label for="{{ form.module_name.id_for_label }}"
+                               class="form-label">
+
+                            Module Name
+
+                        </label>
+
+                        {{ form.module_name }}
+
+                        {% for error in form.module_name.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label for="{{ form.credits.id_for_label }}"
+                               class="form-label">
+
+                            Credits
+
+                        </label>
+
+                        {{ form.credits }}
+
+                        {% for error in form.credits.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-4">
+
+                        <label for="{{ form.target_grade.id_for_label }}"
+                               class="form-label">
+
+                            Target Grade
+
+                        </label>
+
+                        {{ form.target_grade }}
+
+                        <div class="form-text">
+                            Optional. Enter a value between 0 and 100.
+                        </div>
+
+                        {% for error in form.target_grade.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="d-flex gap-2">
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            {% if module %}
+                                Save Changes
+                            {% else %}
+                                Add Module
+                            {% endif %}
+
+                        </button>
+
+                        <a href="{% url 'academics:module_list' %}"
+                           class="btn btn-outline-secondary">
+
+                            Cancel
+
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

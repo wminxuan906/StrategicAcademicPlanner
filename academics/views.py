@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Semester
-from .forms import SemesterForm
+from .models import Semester, Module
+from .forms import SemesterForm, ModuleForm
 
 
 @login_required(login_url="/accounts/login/")
@@ -102,5 +102,114 @@ def semester_delete(request, semester_id):
         "academics/semester_confirm_delete.html",
         {
             "semester": semester
+        }
+    )
+
+
+@login_required(login_url="/accounts/login/")
+def module_list(request):
+    modules = Module.objects.filter(
+        semester__user=request.user
+    ).select_related("semester")
+
+    semester_id = request.GET.get("semester")
+
+    if semester_id:
+        modules = modules.filter(
+            semester_id=semester_id,
+            semester__user=request.user
+        )
+
+    return render(
+        request,
+        "academics/module_list.html",
+        {
+            "modules": modules,
+            "page_title": "Modules",
+        }
+    )
+
+
+@login_required(login_url="/accounts/login/")
+def module_create(request):
+    if request.method == "POST":
+        form = ModuleForm(
+            request.POST,
+            user=request.user
+        )
+
+        if form.is_valid():
+            form.save()
+            return redirect("academics:module_list")
+
+    else:
+        form = ModuleForm(
+            user=request.user
+        )
+
+    return render(
+        request,
+        "academics/module_form.html",
+        {
+            "form": form,
+            "page_title": "Add Module",
+        }
+    )
+
+
+@login_required(login_url="/accounts/login/")
+def module_update(request, module_id):
+    module = get_object_or_404(
+        Module,
+        id=module_id,
+        semester__user=request.user
+    )
+
+    if request.method == "POST":
+        form = ModuleForm(
+            request.POST,
+            instance=module,
+            user=request.user
+        )
+
+        if form.is_valid():
+            form.save()
+            return redirect("academics:module_list")
+
+    else:
+        form = ModuleForm(
+            instance=module,
+            user=request.user
+        )
+
+    return render(
+        request,
+        "academics/module_form.html",
+        {
+            "form": form,
+            "module": module,
+            "page_title": "Edit Module",
+        }
+    )
+
+
+@login_required(login_url="/accounts/login/")
+def module_delete(request, module_id):
+    module = get_object_or_404(
+        Module,
+        id=module_id,
+        semester__user=request.user
+    )
+
+    if request.method == "POST":
+        module.delete()
+        return redirect("academics:module_list")
+
+    return render(
+        request,
+        "academics/module_confirm_delete.html",
+        {
+            "module": module,
+            "page_title": "Delete Module",
         }
     )
