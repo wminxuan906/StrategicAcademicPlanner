@@ -34,4 +34,28 @@ urlpatterns = [
         views.module_delete,
         name="module_delete",
     ),
-]
+
+    path(
+        "assessments/",
+        views.assessment_list,
+        name="assessment_list",
+    ),
+
+    path(
+        "assessments/create/",
+        views.assessment_create,
+        name="assessment_create",
+    ),
+
+    path(
+        "assessments/<int:assessment_id>/edit/",
+        views.assessment_update,
+        name="assessment_update",
+    ),
+
+    path(
+        "assessments/<int:assessment_id>/delete/",
+        views.assessment_delete,
+        name="assessment_delete",
+    ),
+    ]

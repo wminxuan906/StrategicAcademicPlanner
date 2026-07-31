@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if assessment %}
+Edit Assessment
+{% else %}
+Add Assessment
+{% endif %}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-7">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body p-4">
+
+                <h2 class="fw-bold mb-1">
+
+                    {% if assessment %}
+                        Edit Assessment
+                    {% else %}
+                        Add Assessment
+                    {% endif %}
+
+                </h2>
+
+                <p class="text-muted mb-4">
+
+                    {% if assessment %}
+                        Edit the assessment information.
+                    {% else %}
+                        Add an assessment to one of your modules.
+                    {% endif %}
+
+                </p>
+
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+
+                    {% if form.non_field_errors %}
+
+                        <div class="alert alert-danger">
+
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="mb-3">
+
+                        <label for="{{ form.module.id_for_label }}"
+                               class="form-label">
+
+                            Module
+
+                        </label>
+
+                        {{ form.module }}
+
+                        {% for error in form.module.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label for="{{ form.assessment_name.id_for_label }}"
+                               class="form-label">
+
+                            Assessment Name
+
+                        </label>
+
+                        {{ form.assessment_name }}
+
+                        {% for error in form.assessment_name.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label for="{{ form.assessment_type.id_for_label }}"
+                               class="form-label">
+
+                            Assessment Type
+
+                        </label>
+
+                        {{ form.assessment_type }}
+
+                        {% for error in form.assessment_type.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label for="{{ form.weight.id_for_label }}"
+                               class="form-label">
+
+                            Weight
+
+                        </label>
+
+                        {{ form.weight }}
+
+                        {% for error in form.weight.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label for="{{ form.maximum_score.id_for_label }}"
+                               class="form-label">
+
+                            Maximum Score
+
+                        </label>
+
+                        {{ form.maximum_score }}
+
+                        {% for error in form.maximum_score.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label for="{{ form.deadline.id_for_label }}"
+                               class="form-label">
+
+                            Deadline
+
+                        </label>
+
+                        {{ form.deadline }}
+
+                        {% for error in form.deadline.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label for="{{ form.status.id_for_label }}"
+                               class="form-label">
+
+                            Status
+
+                        </label>
+
+                        {{ form.status }}
+
+                        {% for error in form.status.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-4">
+
+                        <label for="{{ form.raw_score.id_for_label }}"
+                               class="form-label">
+
+                            Raw Score
+
+                        </label>
+
+                        {{ form.raw_score }}
+
+                        {% for error in form.raw_score.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="d-flex gap-2">
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            {% if assessment %}
+                                Save Changes
+                            {% else %}
+                                Add Assessment
+                            {% endif %}
+
+                        </button>
+
+                        <a href="{% url 'academics:assessment_list' %}"
+                           class="btn btn-outline-secondary">
+
+                            Cancel
+
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

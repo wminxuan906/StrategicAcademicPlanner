@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Semester, Module
-from .forms import SemesterForm, ModuleForm
+from .models import Semester, Module, Assessment
+from .forms import SemesterForm, ModuleForm, AssessmentForm
 
 
 @login_required(login_url="/accounts/login/")
@@ -212,4 +212,131 @@ def module_delete(request, module_id):
             "module": module,
             "page_title": "Delete Module",
         }
+    )
+
+
+@login_required(login_url="/accounts/login/")
+def assessment_list(request):
+
+    assessments = Assessment.objects.filter(
+        module__semester__user=request.user
+    ).select_related(
+        "module",
+        "module__semester",
+    )
+
+    module_id = request.GET.get("module")
+
+    if module_id:
+
+        assessments = assessments.filter(
+            module_id=module_id,
+            module__semester__user=request.user,
+        )
+
+    return render(
+        request,
+        "academics/assessment_list.html",
+        {
+            "assessments": assessments,
+            "page_title": "Assessments",
+        },
+    )
+
+
+@login_required(login_url="/accounts/login/")
+def assessment_create(request):
+
+    if request.method == "POST":
+
+        form = AssessmentForm(
+            request.POST,
+            user=request.user,
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            return redirect("academics:assessment_list")
+
+    else:
+
+        form = AssessmentForm(
+            user=request.user,
+        )
+
+    return render(
+        request,
+        "academics/assessment_form.html",
+        {
+            "form": form,
+            "page_title": "Add Assessment",
+        },
+    )
+
+
+@login_required(login_url="/accounts/login/")
+def assessment_update(request, assessment_id):
+
+    assessment = get_object_or_404(
+        Assessment,
+        id=assessment_id,
+        module__semester__user=request.user,
+    )
+
+    if request.method == "POST":
+
+        form = AssessmentForm(
+            request.POST,
+            instance=assessment,
+            user=request.user,
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            return redirect("academics:assessment_list")
+
+    else:
+
+        form = AssessmentForm(
+            instance=assessment,
+            user=request.user,
+        )
+
+    return render(
+        request,
+        "academics/assessment_form.html",
+        {
+            "form": form,
+            "assessment": assessment,
+            "page_title": "Edit Assessment",
+        },
+    )
+
+
+@login_required(login_url="/accounts/login/")
+def assessment_delete(request, assessment_id):
+
+    assessment = get_object_or_404(
+        Assessment,
+        id=assessment_id,
+        module__semester__user=request.user,
+    )
+
+    if request.method == "POST":
+
+        assessment.delete()
+
+        return redirect("academics:assessment_list")
+
+    return render(
+        request,
+        "academics/assessment_confirm_delete.html",
+        {
+            "assessment": assessment,
+            "page_title": "Delete Assessment",
+        },
     )

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Semester, Module
+from .models import Semester, Module, Assessment
 
 
 class SemesterForm(forms.ModelForm):
@@ -86,3 +86,101 @@ class ModuleForm(forms.ModelForm):
             ).order_by("-academic_year", "name")
         else:
             self.fields["semester"].queryset = Semester.objects.none()
+
+
+class AssessmentForm(forms.ModelForm):
+
+    class Meta:
+        model = Assessment
+
+        fields = [
+            "module",
+            "assessment_name",
+            "assessment_type",
+            "weight",
+            "maximum_score",
+            "deadline",
+            "status",
+            "raw_score",
+        ]
+
+        widgets = {
+            "module": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+
+            "assessment_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Enter assessment name",
+                }
+            ),
+
+            "assessment_type": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+
+            "weight": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": 0,
+                    "max": 100,
+                    "step": "0.01",
+                }
+            ),
+
+            "maximum_score": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": 0,
+                    "step": "0.01",
+                }
+            ),
+
+            "deadline": forms.DateInput(
+                attrs={
+                    "class": "form-control",
+                    "type": "date",
+                }
+            ),
+
+            "status": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+
+            "raw_score": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": 0,
+                    "step": "0.01",
+                    "placeholder": "Optional",
+                }
+            ),
+        }
+
+    def __init__(self, *args, user=None, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        if user:
+
+            self.fields["module"].queryset = (
+                Module.objects.filter(
+                    semester__user=user
+                )
+                .select_related("semester")
+                .order_by(
+                    "-semester__academic_year",
+                    "module_code",
+                )
+            )
+
+        else:
+
+            self.fields["module"].queryset = Module.objects.none()
