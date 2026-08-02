@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -54,6 +56,35 @@ class Module(models.Model):
                 name="unique_module_code_per_semester",
             )
         ]
+
+    @property
+    def completed_weight(self):
+        return sum(
+            (
+                assessment.weight
+                for assessment in self.assessments.all()
+                if assessment.is_graded
+            ),
+            Decimal("0"),
+        )
+
+    @property
+    def remaining_weight(self):
+        return max(
+            Decimal("100") - self.completed_weight,
+            Decimal("0"),
+        )
+
+    @property
+    def current_contribution(self):
+        return sum(
+            (
+                assessment.weighted_contribution
+                for assessment in self.assessments.all()
+                if assessment.weighted_contribution is not None
+            ),
+            Decimal("0"),
+        )
 
     def __str__(self):
         return f"{self.module_code} - {self.module_name}"
@@ -115,5 +146,25 @@ class Assessment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def percentage_score(self):
+        if self.raw_score is None or not self.maximum_score:
+            return None
+
+        return (self.raw_score / self.maximum_score) * 100
+
+    @property
+    def weighted_contribution(self):
+        percentage = self.percentage_score
+
+        if percentage is None:
+            return None
+
+        return (percentage * self.weight) / 100
+
+    @property
+    def is_graded(self):
+        return self.raw_score is not None
+    
     def __str__(self):
         return f"{self.assessment_name} - {self.module.module_code}"

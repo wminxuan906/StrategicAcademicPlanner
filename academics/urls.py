@@ -58,4 +58,10 @@ urlpatterns = [
         views.assessment_delete,
         name="assessment_delete",
     ),
+
+    path(
+        "grade-tracking/",
+        views.grade_tracking,
+        name="grade_tracking",
+    ),
     ]

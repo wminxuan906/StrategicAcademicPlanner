@@ -340,3 +340,24 @@ def assessment_delete(request, assessment_id):
             "page_title": "Delete Assessment",
         },
     )
+
+@login_required(login_url="/accounts/login/")
+def grade_tracking(request):
+    modules = (
+        Module.objects
+        .filter(semester__user=request.user)
+        .select_related("semester")
+        .prefetch_related("assessments")
+        .order_by("semester__academic_year", "module_code")
+    )
+
+    context = {
+        "modules": modules,
+        "page_title": "Grade Tracking",
+    }
+
+    return render(
+        request,
+        "academics/grade_tracking.html",
+        context,
+    )

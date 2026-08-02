@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django import forms
 from .models import Semester, Module, Assessment
 
@@ -184,3 +185,41 @@ class AssessmentForm(forms.ModelForm):
         else:
 
             self.fields["module"].queryset = Module.objects.none()
+    
+    def clean_weight(self):
+        weight = self.cleaned_data.get("weight")
+        module = self.cleaned_data.get("module")
+
+        if weight is None or module is None:
+            return weight
+
+        assessments = Assessment.objects.filter(
+            module=module
+        )
+
+        if self.instance.pk:
+            assessments = assessments.exclude(
+                pk=self.instance.pk
+            )
+
+        existing_weight = sum(
+            (
+                assessment.weight
+                for assessment in assessments
+            ),
+            Decimal("0"),
+        )
+
+        total_weight = existing_weight + weight
+
+        if total_weight > Decimal("100"):
+            remaining_weight = (
+                Decimal("100") - existing_weight
+            )
+
+            raise forms.ValidationError(
+                "The total assessment weight cannot exceed 100%. "
+                f"The maximum available weight is {remaining_weight}%."
+            )
+
+        return weight
