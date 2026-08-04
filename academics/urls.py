@@ -64,4 +64,11 @@ urlpatterns = [
         views.grade_tracking,
         name="grade_tracking",
     ),
+
+    path(
+    "what-if-calculator/",
+    views.what_if_calculator,
+    name="what_if_calculator",
+    ),
+
     ]

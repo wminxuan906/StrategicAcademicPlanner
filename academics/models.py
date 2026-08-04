@@ -58,6 +58,16 @@ class Module(models.Model):
         ]
 
     @property
+    def total_assessment_weight(self):
+        return sum(
+            (
+                assessment.weight
+                for assessment in self.assessments.all()
+            ),
+            Decimal("0"),
+        )
+
+    @property
     def completed_weight(self):
         return sum(
             (
@@ -65,6 +75,24 @@ class Module(models.Model):
                 for assessment in self.assessments.all()
                 if assessment.is_graded
             ),
+            Decimal("0"),
+        )
+
+    @property
+    def known_remaining_weight(self):
+        return sum(
+            (
+                assessment.weight
+                for assessment in self.assessments.all()
+                if not assessment.is_graded
+            ),
+            Decimal("0"),
+        )
+
+    @property
+    def unannounced_weight(self):
+        return max(
+            Decimal("100") - self.total_assessment_weight,
             Decimal("0"),
         )
 
@@ -85,6 +113,44 @@ class Module(models.Model):
             ),
             Decimal("0"),
         )
+
+    def required_average_for(self, target_grade):
+        if target_grade is None:
+            return None
+
+        if self.remaining_weight == Decimal("0"):
+            return None
+
+        return (
+            (
+                target_grade
+                - self.current_contribution
+            )
+            / self.remaining_weight
+        ) * Decimal("100")
+
+    def target_status_for(self, target_grade):
+        if target_grade is None:
+            return "no_target"
+
+        if self.remaining_weight == Decimal("0"):
+            if self.current_contribution >= target_grade:
+                return "achieved"
+
+            return "not_achieved"
+
+        required_average = self.required_average_for(target_grade)
+
+        if required_average <= Decimal("0"):
+            return "achieved"
+
+        if required_average > Decimal("100"):
+            return "not_achievable"
+
+        if required_average >= Decimal("80"):
+            return "challenging"
+
+        return "achievable"
 
     def __str__(self):
         return f"{self.module_code} - {self.module_name}"

@@ -223,3 +223,45 @@ class AssessmentForm(forms.ModelForm):
             )
 
         return weight
+
+class WhatIfCalculatorForm(forms.Form):
+    module = forms.ModelChoiceField(
+        queryset=Module.objects.none(),
+        widget=forms.Select(
+            attrs={
+                "class": "form-select",
+            }
+        ),
+    )
+
+    target_grade = forms.DecimalField(
+        required=False,
+        min_value=0,
+        max_value=100,
+        decimal_places=2,
+        max_digits=5,
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control",
+                "min": 0,
+                "max": 100,
+                "step": "1",
+                "placeholder": "Enter a temporary target",
+            }
+        ),
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if user:
+            self.fields["module"].queryset = (
+                Module.objects.filter(
+                    semester__user=user
+                )
+                .select_related("semester")
+                .order_by(
+                    "-semester__academic_year",
+                    "module_code",
+                )
+            )

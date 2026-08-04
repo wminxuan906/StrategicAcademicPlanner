@@ -1,7 +1,13 @@
+from decimal import Decimal, InvalidOperation
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Semester, Module, Assessment
-from .forms import SemesterForm, ModuleForm, AssessmentForm
+from .forms import (
+    SemesterForm,
+    ModuleForm,
+    AssessmentForm,
+    WhatIfCalculatorForm,
+)
 
 
 @login_required(login_url="/accounts/login/")
@@ -360,4 +366,248 @@ def grade_tracking(request):
         request,
         "academics/grade_tracking.html",
         context,
+    )
+
+@login_required(login_url="/accounts/login/")
+def what_if_calculator(request):
+    selected_module = None
+    target_grade = None
+    assessments = []
+    remaining_assessments = []
+    completed_assessment_count = 0
+
+    actual_contribution = Decimal("0")
+    scenario_contribution = Decimal("0")
+    projected_grade = None
+    gap_to_target = None
+
+    published_weight = Decimal("0")
+    unpublished_weight = Decimal("0")
+    entered_expected_weight = Decimal("0")
+
+    scenario_status = None
+    scenario_calculated = False
+    scenario_errors = []
+    calculation_breakdown = []
+
+    if request.method == "POST":
+        form = WhatIfCalculatorForm(
+            request.POST,
+            user=request.user,
+        )
+
+        if form.is_valid():
+            selected_module = form.cleaned_data["module"]
+            submitted_target = form.cleaned_data["target_grade"]
+            action = request.POST.get("action")
+
+            if submitted_target is not None:
+                target_grade = submitted_target
+            else:
+                target_grade = selected_module.target_grade
+
+            actual_contribution = (
+                selected_module.current_contribution
+            )
+
+            assessments = list(
+                selected_module.assessments
+                .all()
+                .order_by(
+                    "deadline",
+                    "assessment_name",
+                )
+            )
+
+            remaining_assessments = [
+                assessment
+                for assessment in assessments
+                if assessment.raw_score is None
+            ]
+
+            completed_assessment_count = sum(
+                1
+                for assessment in assessments
+                if assessment.raw_score is not None
+            )
+
+            published_weight = sum(
+                (assessment.weight for assessment in assessments),
+                Decimal("0"),
+            )
+
+            unpublished_weight = max(
+                Decimal("100") - published_weight,
+                Decimal("0"),
+            )
+
+            confirmed_weight = Decimal("0")
+
+            for assessment in assessments:
+                assessment.scenario_mark = None
+
+                if assessment.raw_score is None:
+                    continue
+
+                confirmed_weight += assessment.weight
+
+                calculation_breakdown.append(
+                    {
+                        "assessment_name": assessment.assessment_name,
+                        "result_type": "Actual",
+                        "weight": assessment.weight,
+                        "mark": assessment.raw_score,
+                        "maximum_score": assessment.maximum_score,
+                        "percentage": assessment.percentage_score,
+                        "contribution": assessment.weighted_contribution,
+                    }
+                )
+
+            if action == "load_module":
+                form = WhatIfCalculatorForm(
+                    user=request.user,
+                    initial={
+                        "module": selected_module,
+                    },
+                )
+
+            if action == "calculate_scenario":
+                if target_grade is None:
+                    scenario_errors.append(
+                        "Enter a target grade for this scenario."
+                    )
+                for assessment in remaining_assessments:
+                    entered_value = request.POST.get(
+                        f"expected_{assessment.id}",
+                        "",
+                    ).strip()
+
+                    if not entered_value:
+                        continue
+
+                    assessment.scenario_mark = entered_value
+
+                    try:
+                        expected_mark = Decimal(entered_value)
+
+                    except InvalidOperation:
+                        scenario_errors.append(
+                            f"Enter a valid mark for "
+                            f"{assessment.assessment_name}."
+                        )
+                        continue
+
+                    if expected_mark < Decimal("0"):
+                        scenario_errors.append(
+                            f"The expected mark for "
+                            f"{assessment.assessment_name} "
+                            f"cannot be below 0."
+                        )
+                        continue
+
+                    if (
+                        assessment.maximum_score is None
+                        or assessment.maximum_score <= Decimal("0")
+                    ):
+                        scenario_errors.append(
+                            f"{assessment.assessment_name} does not "
+                            f"have a valid maximum score."
+                        )
+                        continue
+
+                    if expected_mark > assessment.maximum_score:
+                        scenario_errors.append(
+                            f"The expected mark for "
+                            f"{assessment.assessment_name} "
+                            f"cannot exceed "
+                            f"{assessment.maximum_score}."
+                        )
+                        continue
+
+                    assessment.scenario_mark = expected_mark
+
+                    expected_percentage = (
+                        expected_mark
+                        / assessment.maximum_score
+                    ) * Decimal("100")
+
+                    contribution = (
+                        expected_percentage
+                        * assessment.weight
+                    ) / Decimal("100")
+
+                    scenario_contribution += contribution
+                    entered_expected_weight += assessment.weight
+
+                    calculation_breakdown.append(
+                        {
+                            "assessment_name": assessment.assessment_name,
+                            "result_type": "Expected",
+                            "weight": assessment.weight,
+                            "mark": expected_mark,
+                            "maximum_score": assessment.maximum_score,
+                            "percentage": expected_percentage,
+                            "contribution": contribution,
+                        }
+                    )
+
+                if not scenario_errors:
+                    projected_grade = (
+                        actual_contribution
+                        + scenario_contribution
+                    )
+
+                    unentered_published_weight = max(
+                        published_weight
+                        - confirmed_weight
+                        - entered_expected_weight,
+                        Decimal("0"),
+                    )
+
+                    if unentered_published_weight > Decimal("0"):
+                        scenario_status = "incomplete"
+                        gap_to_target = None
+
+                    elif unpublished_weight > Decimal("0"):
+                        scenario_status = "partial_projection"
+                        gap_to_target = None
+
+                    else:
+                        gap_to_target = projected_grade - target_grade
+
+                        if projected_grade >= target_grade:
+                            scenario_status = "target_met"
+
+                        else:
+                            scenario_status = "below_target"
+
+                    scenario_calculated = True
+
+    else:
+        form = WhatIfCalculatorForm(
+            user=request.user,
+        )
+
+    return render(
+        request,
+        "academics/what_if_calculator.html",
+        {
+            "form": form,
+            "selected_module": selected_module,
+            "target_grade": target_grade,
+            "assessments": assessments,
+            "remaining_assessments": remaining_assessments,
+            "completed_assessment_count": completed_assessment_count,
+            "actual_contribution": actual_contribution,
+            "scenario_contribution": scenario_contribution,
+            "projected_grade": projected_grade,
+            "gap_to_target": gap_to_target,
+            "published_weight": published_weight,
+            "unpublished_weight": unpublished_weight,
+            "scenario_status": scenario_status,
+            "scenario_calculated": scenario_calculated,
+            "scenario_errors": scenario_errors,
+            "calculation_breakdown": calculation_breakdown,
+            "page_title": "What-if Calculator",
+        },
     )
