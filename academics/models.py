@@ -185,6 +185,16 @@ class Assessment(models.Model):
         (GRADED, "Graded"),
     ]
 
+    LOW = "Low"
+    MEDIUM = "Medium"
+    HIGH = "High"
+
+    EFFORT_LEVEL_CHOICES = [
+        (LOW, "Low"),
+        (MEDIUM, "Medium"),
+        (HIGH, "High")
+    ]
+
     module = models.ForeignKey(
         Module, 
         on_delete=models.CASCADE, 
@@ -202,6 +212,11 @@ class Assessment(models.Model):
         max_length=20, 
         choices=STATUS_CHOICES, 
         default=NOT_STARTED,
+    )
+    effort_level = models.CharField(
+        max_length=10,
+        choices=EFFORT_LEVEL_CHOICES,
+        default=MEDIUM,
     )
     raw_score = models.DecimalField(
         max_digits=6, 

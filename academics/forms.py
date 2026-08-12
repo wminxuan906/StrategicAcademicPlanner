@@ -102,6 +102,7 @@ class AssessmentForm(forms.ModelForm):
             "maximum_score",
             "deadline",
             "status",
+            "effort_level",
             "raw_score",
         ]
 
@@ -150,6 +151,12 @@ class AssessmentForm(forms.ModelForm):
             ),
 
             "status": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+
+            "effort_level": forms.Select(
                 attrs={
                     "class": "form-select",
                 }

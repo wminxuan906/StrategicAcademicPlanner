@@ -211,6 +211,26 @@ Add Assessment
 
                     </div>
 
+                    <div class="mb-3">
+
+                        <label for="{{ form.effort_level.id_for_label }}"
+                            class="form-label">
+
+                            Effort Level
+
+                        </label>
+
+                        {{ form.effort_level }}
+
+                        {% for error in form.effort_level.errors %}
+
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
 
                     <div class="mb-4">
 

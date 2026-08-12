@@ -3,5 +3,308 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h1>Dashboard</h1>
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-start mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">Dashboard</h2>
+
+        <p class="text-muted mb-0">
+            Overview of your current academic situation.
+        </p>
+    </div>
+
+
+    <!-- Semester Selector -->
+    <form method="get">
+
+        <select
+            name="semester"
+            class="form-select"
+            onchange="this.form.submit()"
+        >
+
+            {% for semester in semesters %}
+
+                <option
+                    value="{{ semester.id }}"
+                    {% if semester == selected_semester %}
+                        selected
+                    {% endif %}
+                >
+                    {{ semester.name }}
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+    </form>
+
+</div>
+
+
+{% if selected_semester %}
+
+<!-- Academic Overview -->
+<h5 class="fw-semibold mb-3">
+    Academic Overview
+</h5>
+
+<div class="row g-3 mb-5">
+
+    <!-- Modules -->
+    <div class="col-md-4">
+
+        <div class="card border shadow-sm h-100">
+
+            <div class="card-body text-center py-4">
+
+                <div class="text-muted mb-2">
+                    Modules
+                </div>
+
+                <div class="fs-2 fw-bold">
+                    {{ modules_count }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Assessments -->
+    <div class="col-md-4">
+
+        <div class="card border shadow-sm h-100">
+
+            <div class="card-body text-center py-4">
+
+                <div class="text-muted mb-2">
+                    Assessments
+                </div>
+
+                <div class="fs-2 fw-bold">
+                    {{ assessments_count }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Upcoming -->
+    <div class="col-md-4">
+
+        <div class="card border shadow-sm h-100">
+
+            <div class="card-body text-center py-4">
+
+                <div class="text-muted mb-2">
+                    Upcoming
+                </div>
+
+                <div class="fs-2 fw-bold">
+                    {{ upcoming_count }}
+                </div>
+
+                <div class="small text-muted">
+                    Assessments
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- Assessments to Focus On -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <h5 class="fw-semibold mb-0">
+        Assessments to Focus On
+    </h5>
+
+    <a
+        href="{% url 'academics:assessment_list' %}"
+        class="text-decoration-none"
+    >
+        View All Assessments →
+    </a>
+
+</div>
+
+
+{% if focus_assessments %}
+
+    {% for item in focus_assessments %}
+
+        <div class="card border shadow-sm mb-3">
+
+            <div class="card-body p-4">
+
+                <!-- Assessment name + Focus label -->
+                <div class="d-flex justify-content-between align-items-start mb-2">
+
+                    <div>
+
+                        <h6 class="fw-bold mb-1">
+                            {{ item.assessment.assessment_name }}
+                        </h6>
+
+                        <div class="text-muted small">
+                            {{ item.assessment.module.module_code }}
+                            -
+                            {{ item.assessment.module.module_name }}
+                        </div>
+
+                    </div>
+
+
+                    <span class="badge bg-light text-dark border">
+                        Focus
+                    </span>
+
+                </div>
+
+
+                <!-- Assessment information -->
+                <div class="small mb-3">
+
+                    {% if item.assessment.deadline %}
+                        Due:
+                        {{ item.assessment.deadline|date:"d M Y" }}
+                    {% else %}
+                        No deadline
+                    {% endif %}
+
+                    <span class="mx-2">•</span>
+
+                    Weight:
+                    {{ item.assessment.weight }}%
+
+                </div>
+
+
+                <!-- Attention Factors -->
+                <div class="d-flex flex-wrap gap-2">
+
+                    {% for factor in item.factors %}
+
+                        <span class="badge bg-light text-dark border px-3 py-2">
+                            {{ factor }}
+                        </span>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+
+{% else %}
+
+    <div class="alert alert-light border">
+
+        No assessments currently require additional attention.
+
+    </div>
+
+{% endif %}
+
+<!-- Academic Guidance -->
+<h5 class="fw-semibold mt-5 mb-3">
+    Academic Guidance
+</h5>
+
+{% if academic_guidance %}
+
+<div class="row g-3">
+
+    {% for item in academic_guidance %}
+
+    <div class="col-md-6">
+
+        <div class="card border shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+                <h6 class="fw-bold mb-3">
+                    {{ item.module.module_name }}
+                </h6>
+
+                <div class="row">
+
+                    <div class="col-6">
+
+                        <div class="small text-muted mb-1">
+                            Target Grade
+                        </div>
+
+                        <div class="fs-5 fw-semibold">
+                            {{ item.target_grade|floatformat:2 }}%
+                        </div>
+
+                    </div>
+
+                    <div class="col-6">
+
+                        <div class="small text-muted mb-1">
+                            Required Average
+                        </div>
+
+                        <div class="fs-5 fw-semibold">
+
+                            {% if item.required_average is not None %}
+                                {{ item.required_average|floatformat:2 }}%
+                            {% else %}
+                                —
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="alert alert-light border">
+    No target grades have been set for this semester.
+</div>
+
+{% endif %}
+
+{% else %}
+
+<div class="alert alert-light border">
+    No semester available. Add a semester to start using the dashboard.
+</div>
+
+{% endif %}
+
+
 {% endblock %}

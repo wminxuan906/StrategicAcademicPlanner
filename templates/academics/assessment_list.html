@@ -49,6 +49,7 @@ Assessments
                         <th>Type</th>
                         <th>Weight</th>
                         <th>Deadline</th>
+                        <th>Effort</th>
                         <th>Status</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -89,6 +90,10 @@ Assessments
 
                             {% endif %}
 
+                        </td>
+
+                        <td>
+                            {{assessment.effort_level}}
                         </td>
 
                         <td>
