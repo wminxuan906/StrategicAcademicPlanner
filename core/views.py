@@ -1,11 +1,17 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 
 from academics.models import Semester
 
 from django.utils import timezone
 from academics.models import Semester, Assessment
 from datetime import timedelta
+
+from django.contrib import messages
+from django.contrib.auth.forms import PasswordChangeForm
+
+from .forms import AccountUpdateForm
+
 
 @login_required(login_url="/accounts/login/")
 def dashboard(request):
@@ -156,4 +162,63 @@ def dashboard(request):
 
 @login_required(login_url="/accounts/login/")
 def settings(request):
-    return render(request, "settings.html")
+
+    account_form = AccountUpdateForm(
+        instance=request.user
+    )
+
+    password_form = PasswordChangeForm(
+        user=request.user
+    )
+
+    # Update username and email
+    if request.method == "POST" and request.POST.get("form_type") == "account":
+
+        account_form = AccountUpdateForm(
+            request.POST,
+            instance=request.user
+        )
+
+        if account_form.is_valid():
+            account_form.save()
+
+            messages.success(
+                request,
+                "Account information updated successfully."
+            )
+
+            return redirect("core:settings")
+
+    # Change password
+    if request.method == "POST" and request.POST.get("form_type") == "password":
+
+        password_form = PasswordChangeForm(
+            user=request.user,
+            data=request.POST
+        )
+
+        if password_form.is_valid():
+
+            user = password_form.save()
+
+            # Keep the user logged in after changing the password
+            update_session_auth_hash(
+                request,
+                user
+            )
+
+            messages.success(
+                request,
+                "Password changed successfully."
+            )
+
+            return redirect("core:settings")
+
+    return render(
+        request,
+        "settings.html",
+        {
+            "account_form": account_form,
+            "password_form": password_form,
+        }
+    )
