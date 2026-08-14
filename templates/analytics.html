@@ -10,22 +10,6 @@
         margin-bottom: 36px;
     }
 
-    .analytics-section-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #212529;
-        margin-bottom: 16px;
-    }
-
-    .analytics-card {
-        background: #ffffff;
-        border: 0;
-        border-radius: 8px;
-        padding: 28px 32px;
-        box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
-    }
-
-
     /* Module performance */
 
     .performance-chart-scroll {
@@ -165,12 +149,10 @@
         margin-bottom: 7px;
     }
 
-    .weight-label-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        font-size: 12px;
-        color: #6c757d;
+    .weight-summary {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6c757d;
     }
 
     .weight-bar {
@@ -192,6 +174,11 @@
         background: #e9ecef;
     }
 
+    .weight-not-added {
+    height: 100%;
+    background: #f8f9fa;
+    border-left: 1px dashed #adb5bd;
+    }
 
     /* Upcoming workload */
 
@@ -227,14 +214,6 @@
         min-width: 0;
     }
 
-    .workload-row:nth-child(2) .workload-bar {
-        background: #6ea8fe;
-    }
-
-    .workload-row:nth-child(3) .workload-bar {
-        background: #adb5bd;
-    }
-
     .workload-count {
         width: 38px;
         min-height: 26px;
@@ -257,10 +236,6 @@
 
     @media (max-width: 768px) {
 
-        .analytics-card {
-            padding: 22px 18px;
-        }
-
         .workload-row {
             grid-template-columns: 100px minmax(120px, 1fr) 40px;
         }
@@ -279,7 +254,7 @@
         </h2>
 
         <p class="text-muted mb-0">
-            Visual overview of your academic performance and workload.
+            Analyse your academic performance, assessment progress and workload across modules.
         </p>
 
     </div>
@@ -316,15 +291,28 @@
 {% if selected_semester %}
 
 
-<!-- Module Performance vs Target -->
+<!-- Performance Comparison -->
 
 <section class="analytics-section">
 
-    <h5 class="analytics-section-title">
-        Module Performance vs Target
-    </h5>
+    <div class="sap-card">
 
-    <div class="analytics-card">
+        <h3 class="h5 fw-bold mb-2">
+            Performance Comparison
+        </h3>
+
+        <p class="text-muted small mb-4">
+            Compare current performance with target grades across modules.
+
+            <span
+                class="ms-1"
+                title="Modules without available performance data are not shown."
+                style="cursor: help;"
+                aria-label="Modules without available performance data are not shown."
+            >
+                ⓘ
+            </span>
+        </p>
 
         {% if module_performance %}
 
@@ -363,13 +351,6 @@
 
                             </div>
 
-                            {% else %}
-
-                            <div
-                                class="performance-bar"
-                                style="height: 0;"
-                            ></div>
-
                             {% endif %}
 
 
@@ -385,13 +366,6 @@
                                 </span>
 
                             </div>
-
-                            {% else %}
-
-                            <div
-                                class="target-bar"
-                                style="height: 0;"
-                            ></div>
 
                             {% endif %}
 
@@ -465,45 +439,42 @@
 </section>
 
 
-<!-- Assessment Weight Completion -->
+<!-- Assessment Progress Analysis -->
 
 <section class="analytics-section">
 
-    <h5 class="analytics-section-title">
-        Assessment Weight Completion
-    </h5>
+    <div class="sap-card">
 
-    <div class="analytics-card">
+        <h3 class="h5 fw-bold mb-2">
+            Assessment Progress Analysis
+        </h3>
 
-        {% if weight_completion %}
+        <p class="text-muted small mb-4">
+            Compare completed, remaining and unrecorded assessment weight across modules.
+        </p>
 
-            {% for item in weight_completion %}
+    {% if weight_completion %}
 
-            <div class="weight-module">
+        {% for item in weight_completion %}
 
-                <div class="weight-module-name">
+        <div class="weight-module">
 
-                    {{ item.module.module_code }}
-                    -
-                    {{ item.module.module_name }}
+            <div class="weight-module-name">
 
+                {{ item.module.module_code }}
+                -
+                {{ item.module.module_name }}
+
+            </div>
+
+
+            {% if not item.completed_weight and not item.remaining_weight %}
+
+                <div class="text-muted small">
+                    No assessment data available.
                 </div>
 
-
-                <div class="weight-label-row">
-
-                    <span>
-                        Completed:
-                        {{ item.completed_weight|floatformat:1 }}%
-                    </span>
-
-                    <span>
-                        Remaining:
-                        {{ item.remaining_weight|floatformat:1 }}%
-                    </span>
-
-                </div>
-
+            {% else %}
 
                 <div class="weight-bar">
 
@@ -517,11 +488,35 @@
                         style="width: {{ item.remaining_width }}%;"
                     ></div>
 
+                    <div
+                        class="weight-not-added"
+                        style="width: {{ item.not_added_width }}%;"
+                    ></div>
+
                 </div>
 
-            </div>
+                <div class="weight-summary">
 
-            {% endfor %}
+                    {% if item.completed_weight %}
+                        {{ item.completed_weight|floatformat:1 }}% Completed
+                    {% endif %}
+
+                    {% if item.remaining_weight %}
+                        {% if item.completed_weight %} · {% endif %}
+                            {{ item.remaining_weight|floatformat:1 }}% Remaining
+                    {% endif %}
+
+                    {% if item.not_added_weight %}
+                        {% if item.completed_weight or item.remaining_weight %} · {% endif %}
+                        {{ item.not_added_weight|floatformat:1 }}% Not Added
+                    {% endif %}
+
+                </div>
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
 
         {% else %}
 
@@ -536,15 +531,19 @@
 </section>
 
 
-<!-- Upcoming Workload -->
+<!-- Workload Distribution -->
 
 <section class="analytics-section">
 
-    <h5 class="analytics-section-title">
-        Upcoming Workload
-    </h5>
+    <div class="sap-card">
 
-    <div class="analytics-card">
+        <h3 class="h5 fw-bold mb-2">
+            Workload Distribution
+        </h3>
+
+        <p class="text-muted small mb-4">
+            See how upcoming assessments are distributed across different deadline periods.
+        </p>
 
         {% for item in upcoming_workload %}
 
@@ -575,7 +574,7 @@
 
 
         <div class="small text-muted mt-3">
-            Number of upcoming assessments that are not yet submitted.
+            Based on upcoming assessments that have not yet been submitted.
         </div>
 
     </div>

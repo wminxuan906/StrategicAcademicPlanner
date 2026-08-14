@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.contrib.auth.forms import PasswordChangeForm
 
 from .forms import AccountUpdateForm
-
+from django.contrib.auth import update_session_auth_hash
 
 @login_required(login_url="/accounts/login/")
 def dashboard(request):

@@ -57,18 +57,14 @@
     <!-- Modules -->
     <div class="col-md-4">
 
-        <div class="card border shadow-sm h-100">
+        <div class="sap-metric-card h-100 text-center">
 
-            <div class="card-body text-center py-4">
+            <div class="sap-metric-label">
+                Modules
+            </div>
 
-                <div class="text-muted mb-2">
-                    Modules
-                </div>
-
-                <div class="fs-2 fw-bold">
-                    {{ modules_count }}
-                </div>
-
+            <div class="sap-metric-value">
+                {{ modules_count }}
             </div>
 
         </div>
@@ -79,18 +75,14 @@
     <!-- Assessments -->
     <div class="col-md-4">
 
-        <div class="card border shadow-sm h-100">
+        <div class="sap-metric-card h-100 text-center">
 
-            <div class="card-body text-center py-4">
+            <div class="sap-metric-label">
+                Assessments
+            </div>
 
-                <div class="text-muted mb-2">
-                    Assessments
-                </div>
-
-                <div class="fs-2 fw-bold">
-                    {{ assessments_count }}
-                </div>
-
+            <div class="sap-metric-value">
+                {{ assessments_count }}
             </div>
 
         </div>
@@ -101,22 +93,18 @@
     <!-- Upcoming -->
     <div class="col-md-4">
 
-        <div class="card border shadow-sm h-100">
+        <div class="sap-metric-card h-100 text-center">
 
-            <div class="card-body text-center py-4">
+            <div class="sap-metric-label">
+                Upcoming
+            </div>
 
-                <div class="text-muted mb-2">
-                    Upcoming
-                </div>
+            <div class="sap-metric-value">
+                {{ upcoming_count }}
+            </div>
 
-                <div class="fs-2 fw-bold">
-                    {{ upcoming_count }}
-                </div>
-
-                <div class="small text-muted">
-                    Assessments
-                </div>
-
+            <div class="small text-muted">
+                Assessments
             </div>
 
         </div>
@@ -148,9 +136,9 @@
 
     {% for item in focus_assessments %}
 
-        <div class="card border shadow-sm mb-3">
+        <div class="sap-priority-card mb-3">
 
-            <div class="card-body p-4">
+            <div>
 
                 <!-- Assessment name + Focus label -->
                 <div class="d-flex justify-content-between align-items-start mb-2">
@@ -170,7 +158,7 @@
                     </div>
 
 
-                    <span class="badge bg-light text-dark border">
+                    <span class="sap-focus-badge">
                         Focus
                     </span>
 
@@ -200,8 +188,22 @@
 
                     {% for factor in item.factors %}
 
-                        <span class="badge bg-light text-dark border px-3 py-2">
-                            {{ factor }}
+                        <span class="sap-priority-tag
+                        {% if factor == 'Close deadline' %}
+                        priority-deadline
+
+                        {% elif factor == 'High effort' %}
+                        priority-effort
+
+                        {% elif factor == 'High contribution' %}
+                        priority-contribution
+
+                        {% elif factor == 'Below target' %}
+                        priority-target
+
+                        {% endif %}
+                        ">
+                        {{ factor }}
                         </span>
 
                     {% endfor %}
@@ -238,9 +240,9 @@
 
     <div class="col-md-6">
 
-        <div class="card border shadow-sm h-100">
+        <div class="sap-card h-100">
 
-            <div class="card-body p-4">
+            <div>
 
                 <h6 class="fw-bold mb-3">
                     {{ item.module.module_name }}

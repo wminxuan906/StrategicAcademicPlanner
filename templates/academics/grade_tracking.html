@@ -1,327 +1,452 @@
 {% extends "base.html" %}
 
+
 {% block title %}
 Grade Tracking
 {% endblock %}
 
 
+
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
 
-    <div>
+<div class="mb-4">
 
-        <h2 class="fw-bold mb-1">
-            Module Grade Overview
-        </h2>
+    <h2 class="fw-bold mb-1">
+        Grade Tracking
+    </h2>
 
-        <p class="text-muted mb-0">
-            Review assessment results and their contributions to each module.
-        </p>
 
-    </div>
+    <p class="text-muted mb-0">
+        Review your current academic performance and assessment results.
+    </p>
 
 </div>
 
 
+
+
+
 {% if modules %}
 
-    {% for module in modules %}
-
-        <div class="card shadow-sm border-0 mb-4">
-
-            <div class="card-header bg-white py-3">
-
-                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-
-                    <div>
-
-                        <h3 class="h5 fw-bold mb-1">
-                            {{ module.module_code }} — {{ module.module_name }}
-                        </h3>
-
-                        <p class="text-muted small mb-0">
-                            {{ module.semester.name }}
-                            ·
-                            {{ module.semester.academic_year }}
-                        </p>
-
-                    </div>
 
 
-                    <div>
+{% for module in modules %}
 
-                        {% if module.target_grade is not None %}
 
-                            <span class="badge bg-primary">
-                                Target: {{ module.target_grade|floatformat:2 }}%
-                            </span>
 
-                        {% else %}
+<div class="sap-card mb-4">
 
-                            <span class="badge bg-secondary">
-                                No target grade
-                            </span>
 
-                        {% endif %}
+    <!-- Module Header -->
 
-                    </div>
+    <div class="mb-4">
 
-                </div>
+
+        <h3 class="h5 fw-bold mb-1">
+
+            {{ module.module_code }} — {{ module.module_name }}
+
+        </h3>
+
+
+        <p class="text-muted small mb-0">
+
+            {{ module.semester.name }}
+            ·
+            {{ module.semester.academic_year }}
+
+        </p>
+
+
+    </div>
+
+
+
+
+
+
+    <!-- Summary -->
+
+    <div class="row g-3 mb-4">
+
+
+        <div class="col-md-6">
+
+
+            <div class="bg-light rounded p-2 h-100">
+
+
+                <p class="text-muted small mb-1">
+
+                    Current Contribution
+
+                </p>
+
+
+                <p class="h4 mb-0">
+
+                    {{ module.current_contribution|floatformat:2 }}%
+
+                </p>
+
 
             </div>
 
-
-            <div class="card-body">
-
-                <div class="row g-3 mb-4">
-
-                    <div class="col-md-4">
-
-                        <div class="bg-light rounded p-3 h-100">
-
-                            <p class="text-muted small mb-1">
-                                Current Contribution
-                            </p>
-
-                            <p class="h4 mb-0">
-                                {{ module.current_contribution|floatformat:2 }}%
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="col-md-4">
-
-                        <div class="bg-light rounded p-3 h-100">
-
-                            <p class="text-muted small mb-1">
-                                Completed Weight
-                            </p>
-
-                            <p class="h4 mb-0">
-                                {{ module.completed_weight|floatformat:2 }}%
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="col-md-4">
-
-                        <div class="bg-light rounded p-3 h-100">
-
-                            <p class="text-muted small mb-1">
-                                Remaining Weight
-                            </p>
-
-                            <p class="h4 mb-0">
-                                {{ module.remaining_weight|floatformat:2 }}%
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="table-responsive">
-
-                    <table class="table table-hover align-middle mb-0">
-
-                        <thead>
-
-                            <tr>
-                                <th>Assessment</th>
-                                <th>Type</th>
-                                <th>Raw Score</th>
-                                <th>Percentage</th>
-                                <th>Weight</th>
-                                <th>Contribution</th>
-                                <th>Status</th>
-                                <th class="text-end">Action</th>
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody>
-
-                            {% for assessment in module.assessments.all %}
-
-                                <tr>
-
-                                    <td>
-
-                                        <span class="fw-semibold">
-                                            {{ assessment.assessment_name }}
-                                        </span>
-
-                                        {% if assessment.deadline %}
-
-                                            <div class="text-muted small">
-                                                Due:
-                                                {{ assessment.deadline|date:"d M Y" }}
-                                            </div>
-
-                                        {% endif %}
-
-                                    </td>
-
-
-                                    <td>
-                                        {{ assessment.get_assessment_type_display }}
-                                    </td>
-
-
-                                    <td>
-
-                                        {% if assessment.raw_score is not None %}
-
-                                            {{ assessment.raw_score|floatformat:2 }}
-                                            /
-                                            {{ assessment.maximum_score|floatformat:2 }}
-
-                                        {% else %}
-
-                                            <span class="text-muted">
-                                                Not graded
-                                            </span>
-
-                                        {% endif %}
-
-                                    </td>
-
-
-                                    <td>
-
-                                        {% if assessment.percentage_score is not None %}
-
-                                            {{ assessment.percentage_score|floatformat:2 }}%
-
-                                        {% else %}
-
-                                            <span class="text-muted">
-                                                —
-                                            </span>
-
-                                        {% endif %}
-
-                                    </td>
-
-
-                                    <td>
-                                        {{ assessment.weight|floatformat:2 }}%
-                                    </td>
-
-
-                                    <td>
-
-                                        {% if assessment.weighted_contribution is not None %}
-
-                                            {{ assessment.weighted_contribution|floatformat:2 }}%
-
-                                        {% else %}
-
-                                            <span class="text-muted">
-                                                —
-                                            </span>
-
-                                        {% endif %}
-
-                                    </td>
-
-
-                                    <td>
-
-                                        {% if assessment.is_graded %}
-
-                                            <span class="badge bg-success">
-                                                Graded
-                                            </span>
-
-                                        {% else %}
-
-                                            <span class="badge bg-light text-dark border">
-                                                {{ assessment.get_status_display }}
-                                            </span>
-
-                                        {% endif %}
-
-                                    </td>
-
-
-                                    <td class="text-end">
-
-                                        <a
-                                            href="{% url 'academics:assessment_update' assessment.id %}"
-                                            class="btn btn-outline-secondary btn-sm"
-                                        >
-                                            Edit
-                                        </a>
-
-                                    </td>
-
-                                </tr>
-
-
-                            {% empty %}
-
-                                <tr>
-
-                                    <td
-                                        colspan="8"
-                                        class="text-center text-muted py-4"
-                                    >
-                                        No assessments have been added to this module.
-                                    </td>
-
-                                </tr>
-
-                            {% endfor %}
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
 
         </div>
 
-    {% endfor %}
+
+
+
+
+
+        <div class="col-md-6">
+
+
+            <div class="bg-light rounded p-2 h-100">
+
+
+                <p class="text-muted small mb-1">
+
+                    Completed Weight
+
+                </p>
+
+
+                <p class="h4 mb-0">
+
+                    {{ module.completed_weight|floatformat:2 }}%
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+    </div>
+
+
+
+
+
+
+
+    <!-- Assessment Breakdown -->
+
+
+    <h6 class="fw-bold mb-3">
+        Assessment Breakdown
+    </h6>
+
+
+
+
+    <div class="table-responsive">
+
+
+        <table class="table sap-table align-middle mb-0">
+
+
+            <thead>
+
+                <tr>
+
+
+                    <th>
+                        Assessment
+                    </th>
+
+
+                    <th>
+                        Type
+                    </th>
+
+
+                    <th>
+                        Score
+                    </th>
+
+
+                    <th>
+                        Weight
+                    </th>
+
+
+                    <th>
+                        Contribution
+                    </th>
+
+
+                    <th class="text-end">
+                        Action
+                    </th>
+
+
+                </tr>
+
+
+            </thead>
+
+
+
+
+
+            <tbody>
+
+
+
+            {% for assessment in module.assessments.all %}
+
+
+
+                <tr>
+
+
+
+                    <td>
+
+
+                        <span class="fw-semibold">
+
+                            {{ assessment.assessment_name }}
+
+                        </span>
+
+
+                    </td>
+
+
+
+
+
+                    <td>
+
+
+                        {{ assessment.get_assessment_type_display }}
+
+
+                    </td>
+
+
+
+
+
+
+                    <td>
+
+
+                        {% if assessment.raw_score is not None %}
+
+
+
+                            {{ assessment.raw_score|floatformat:2 }}
+
+
+                            /
+
+
+                            {{ assessment.maximum_score|floatformat:2 }}
+
+
+
+                        {% else %}
+
+
+
+                            <span class="text-muted">
+
+                                Not graded
+
+                            </span>
+
+
+
+                        {% endif %}
+
+
+
+                    </td>
+
+
+
+
+
+
+
+                    <td>
+
+
+                        {{ assessment.weight|floatformat:2 }}%
+
+
+                    </td>
+
+
+
+
+
+
+
+                    <td>
+
+
+                        {% if assessment.weighted_contribution is not None %}
+
+
+
+                            {{ assessment.weighted_contribution|floatformat:2 }}%
+
+
+
+                        {% else %}
+
+
+
+                            <span class="text-muted">
+
+                                —
+
+                            </span>
+
+
+
+                        {% endif %}
+
+
+
+                    </td>
+
+
+
+
+
+
+
+
+                    <td class="text-end">
+
+
+
+                        <a
+                        href="{% url 'academics:assessment_update' assessment.id %}"
+                        class="sap-btn sap-btn-secondary">
+
+
+                            Edit
+
+
+                        </a>
+
+
+
+                    </td>
+
+
+
+
+
+                </tr>
+
+
+
+
+
+
+            {% empty %}
+
+
+
+
+                <tr>
+
+
+                    <td colspan="6"
+                        class="text-center text-muted py-4">
+
+
+                        No assessments have been added to this module.
+
+
+                    </td>
+
+
+                </tr>
+
+
+
+
+            {% endfor %}
+
+
+
+
+            </tbody>
+
+
+
+
+        </table>
+
+
+
+    </div>
+
+
+
+
+
+</div>
+
+
+
+
+
+{% endfor %}
+
+
+
 
 
 {% else %}
 
-    <div class="card shadow-sm border-0">
 
-        <div class="card-body">
 
-            <div class="alert alert-light mb-0">
 
-                <p class="mb-3">
-                    No modules available. Add your first module before tracking grades.
-                </p>
 
-                <a
-                    href="{% url 'academics:module_create' %}"
-                    class="btn btn-primary"
-                >
-                    Add Module
-                </a>
+<div class="sap-card">
 
-            </div>
 
-        </div>
+    <p class="text-muted mb-3">
 
-    </div>
+        No modules available. Add modules before tracking grades.
+
+    </p>
+
+
+
+    <a href="{% url 'academics:module_create' %}"
+       class="sap-btn sap-btn-primary">
+
+        Add Module
+
+    </a>
+
+
+</div>
+
+
+
+
 
 {% endif %}
+
+
+
+
 
 {% endblock %}

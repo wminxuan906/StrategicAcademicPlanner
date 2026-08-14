@@ -22,7 +22,7 @@ Modules
     </div>
 
     <a href="{% url 'academics:module_create' %}"
-       class="btn btn-primary">
+       class="sap-btn sap-btn-primary">
 
         + Add Module
 
@@ -31,7 +31,7 @@ Modules
 </div>
 
 
-<div class="card shadow-sm border-0">
+<div class="sap-card">
 
     <div class="card-body">
 
@@ -39,7 +39,7 @@ Modules
 
         <div class="table-responsive">
 
-            <table class="table align-middle">
+            <table class="table sap-table align-middle">
 
                 <thead>
 
@@ -85,14 +85,14 @@ Modules
                         <td class="text-end">
 
                             <a href="{% url 'academics:module_update' module.id %}"
-                               class="btn btn-outline-secondary btn-sm">
+                               class="sap-btn sap-btn-secondary">
 
                                 Edit
 
                             </a>
 
                             <a href="{% url 'academics:module_delete' module.id %}"
-                               class="btn btn-outline-danger btn-sm">
+                               class="sap-btn sap-btn-danger">
 
                                 Delete
 

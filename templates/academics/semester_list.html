@@ -22,7 +22,7 @@ Semesters
 
 
     <a href="{% url 'academics:semester_create' %}"
-       class="btn btn-primary">
+       class="sap-btn sap-btn-primary">
 
         + Add Semester
 
@@ -41,15 +41,15 @@ Semesters
 <div class="col-md-6 col-lg-4">
 
 
-    <div class="card shadow-sm border-0 h-100">
+    <div class="sap-card h-100">
 
 
         <div class="card-body">
 
 
-            <h5 class="fw-bold mb-2">
+            <h3 class="sap-card-title">
                 {{ semester.name }}
-            </h5>
+            </h3>
 
 
             <p class="text-muted mb-4">
@@ -61,15 +61,13 @@ Semesters
 
 
                 <a href="#"
-                   class="btn btn-outline-primary btn-sm">
-
+                    class="sap-btn sap-btn-primary">
                     View Modules
-
                 </a>
 
 
                 <a href="{% url 'academics:semester_update' semester.id %}"
-                   class="btn btn-outline-secondary btn-sm">
+                   class="sap-btn sap-btn-secondary">
 
                     Edit
 
@@ -77,7 +75,7 @@ Semesters
 
 
                 <a href="{% url 'academics:semester_delete' semester.id %}"
-                   class="btn btn-outline-danger btn-sm">
+                   class="sap-btn sap-btn-danger">
 
                     Delete
 

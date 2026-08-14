@@ -1,687 +1,1090 @@
 {% extends "base.html" %}
 
+
 {% block title %}
 What-if Calculator
 {% endblock %}
 
+
 {% block content %}
 
+
+<!-- Page Header -->
+
 <div class="mb-4">
-    <h2 class="fw-bold mb-1">What-if Grade Calculator</h2>
+
+    <h2 class="fw-bold mb-1">
+        What-if Grade Calculator
+    </h2>
+
     <p class="text-muted mb-0">
-        See how different marks could affect your module result and help you plan ahead.
+        Explore how expected assessment marks could affect your module result.
     </p>
+
 </div>
 
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-body p-3">
 
-        <h3 class="h5 fw-bold mb-2">
-            Select Module
-        </h3>
 
-        <p class="text-muted small mb-3">
-            Choose the module you want to use for this scenario.
-        </p>
+<!-- Select Module -->
 
-        <form method="post">
-            {% csrf_token %}
+<div class="sap-card mb-4">
 
-            <input
-                type="hidden"
-                name="action"
-                value="load_module"
-            >
+    <h3 class="h5 fw-bold mb-2">
+        Select Module
+    </h3>
 
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.non_field_errors %}
+    <p class="text-muted small mb-3">
+        Choose the module you want to use for this scenario.
+    </p>
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <input
+            type="hidden"
+            name="action"
+            value="load_module"
+        >
+
+
+        {% if form.non_field_errors %}
+
+            <div class="alert alert-danger">
+
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <div class="row g-3 align-items-end">
+
+            <div class="col-lg-9">
+
+                <label
+                    for="{{ form.module.id_for_label }}"
+                    class="form-label"
+                >
+                    Module
+                </label>
+
+                {{ form.module }}
+
+
+                {% for error in form.module.errors %}
+
+                    <div class="text-danger small mt-1">
                         {{ error }}
-                    {% endfor %}
-                </div>
-            {% endif %}
+                    </div>
 
-            <div class="row g-3 align-items-end">
-
-                <div class="col-lg-9">
-                    <label
-                        for="{{ form.module.id_for_label }}"
-                        class="form-label"
-                    >
-                        Module
-                    </label>
-
-                    {{ form.module }}
-
-                    {% for error in form.module.errors %}
-                        <div class="text-danger small mt-1">
-                            {{ error }}
-                        </div>
-                    {% endfor %}
-                </div>
-
-                <div class="col-lg-3">
-                    <button
-                        type="submit"
-                        class="btn btn-primary w-100 text-nowrap"
-                    >
-                        Load Module
-                    </button>
-                </div>
+                {% endfor %}
 
             </div>
-        </form>
-
-    </div>
-</div>
-
-{% if selected_module %}
-<form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="calculate_scenario">
-    <input type="hidden" name="module" value="{{ selected_module.id }}">
-
-    <div class="row g-4 align-items-start">
-        <div class="col-xl-7">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white py-3">
-
-                        <h3 class="h5 fw-bold mb-2">
-                        Set Target Grade and Expected Marks
-                    </h3>
-
-                    <p class="text-muted small mb-0">
-                        Adjust the target grade and enter expected marks for this scenario.
-                    </p>
-                </div>
-
-                <div class="card-body">
-                    <div class="mb-4">
-                        <h4 class="h5 fw-bold mb-1">
-                            {{ selected_module.module_code }} — {{ selected_module.module_name }}
-                        </h4>
-                        <p class="text-muted small mb-0">
-                            {{ selected_module.semester.name }} · {{ selected_module.semester.academic_year }}
-                        </p>
-                    </div>
-
-                    <div class="bg-light rounded p-3 mb-4">
-
-                        <label
-                            for="scenarioTargetGrade"
-                            class="form-label fw-semibold"
-                        >
-                            Scenario Target Grade
-                        </label>
-
-                        <div
-                            class="input-group"
-                            style="max-width: 260px;"
-                        >
-                            <input
-                                type="number"
-                                id="scenarioTargetGrade"
-                                name="target_grade"
-                                class="form-control"
-                                min="0"
-                                max="100"
-                                step="1"
-                                value="{% if target_grade is not None %}{{ target_grade }}{% endif %}"
-                                placeholder="Enter a temporary target"
-                            >
-
-                            <span class="input-group-text">
-                                %
-                            </span>
-                        </div>
-
-                        {% if selected_module.target_grade is not None %}
-
-                            <p class="text-muted small mt-2 mb-0">
-                                The default value is taken from the module target grade.
-                                You can change it for this scenario without updating the module target.
-                            </p>
-
-                        {% else %}
-
-                            <p class="text-muted small mt-2 mb-0">
-                                No target grade has been set for this module.
-                                Enter a temporary target for this scenario.
-                            </p>
-
-                        {% endif %}
-
-                    </div>
-
-                    {% if scenario_errors %}
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                {% for error in scenario_errors %}<li>{{ error }}</li>{% endfor %}
-                            </ul>
-                        </div>
-                    {% endif %}
-
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Assessment</th>
-                                    <th class="text-nowrap">Weight</th>
-                                    <th>Status</th>
-                                    <th>Mark</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for assessment in assessments %}
-                                    <tr>
-                                        <td>
-                                            <span class="fw-semibold">{{ assessment.assessment_name }}</span>
-                                            <div class="text-muted small">{{ assessment.get_assessment_type_display }}</div>
-                                        </td>
-                                        <td class="text-nowrap">{{ assessment.weight|floatformat:2 }}%</td>
-                                        <td>
-                                            {% if assessment.raw_score is not None %}
-                                                <span class="badge bg-success">
-                                                    Graded
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">
-                                                    Not Graded
-                                                </span>
-                                            {% endif %}
-                                        </td>
 
 
-                                        <td class="text-nowrap">
+            <div class="col-lg-3">
 
-                                            {% if assessment.raw_score is not None %}
+                <button
+                    type="submit"
+                    class="sap-btn sap-btn-primary w-100"
+                >
+                    Load Module
+                </button>
 
-                                                <span class="fw-semibold">
-                                                    {{ assessment.raw_score|floatformat:2 }}
-                                                    /
-                                                    {{ assessment.maximum_score|floatformat:2 }}
-                                                </span>
-
-                                            {% else %}
-
-                                                <div
-                                                    class="input-group input-group-sm"
-                                                    style="max-width: 150px;"
-                                                >
-
-                                                    <input
-                                                        type="number"
-                                                        name="expected_{{ assessment.id }}"
-                                                        class="form-control"
-                                                        min="0"
-                                                        max="{{ assessment.maximum_score }}"
-                                                        step="1"
-                                                        value="{% if assessment.scenario_mark is not None %}{{ assessment.scenario_mark }}{% endif %}"
-                                                        placeholder="0"
-                                                    >
-
-                                                    <span class="input-group-text">
-                                                        /
-                                                        {{ assessment.maximum_score|floatformat:2 }}
-                                                    </span>
-
-                                                </div>
-
-                                            {% endif %}
-
-                                        </td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted py-4">
-                                            No assessments have been added to this module.
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {% if unpublished_weight > 0 %}
-
-                        <div class="alert alert-info mt-4 mb-0">
-
-                            {{ unpublished_weight|floatformat:2 }}%
-                            of this module has not yet been published.
-
-                            This scenario only uses the assessments
-                            currently available.
-
-                        </div>
-
-                    {% endif %}
-
-                    <div class="d-flex flex-wrap gap-2 mt-4">
-                        <button
-                            type="submit"
-                            class="btn btn-primary"
-                        >
-                            Calculate Scenario
-                        </button>
-                        <button
-                            type="button"
-                            id="resetScenarioInputs"
-                            class="btn btn-outline-secondary"
-                        >
-                            Reset Expected Marks
-                        </button>
-                    </div>
-                </div>
             </div>
+
         </div>
 
-        <div class="col-xl-5">
-            <div class="card shadow-sm border-0 mb-4">
+    </form>
 
-                <div class="card-header bg-white py-3">
-                    <h3 class="h5 fw-bold mb-2">
-                        Results
-                    </h3>
+</div>
+
+
+
+
+{% if selected_module %}
+
+
+<form method="post">
+
+    {% csrf_token %}
+
+    <input
+        type="hidden"
+        name="action"
+        value="calculate_scenario"
+    >
+
+    <input
+        type="hidden"
+        name="module"
+        value="{{ selected_module.id }}"
+    >
+
+
+
+    <div class="row g-4 align-items-start">
+
+
+        <!-- Scenario Setup -->
+
+        <div class="col-xl-7">
+
+            <div class="sap-card mb-4">
+
+
+                <h3 class="h5 fw-bold mb-2">
+                    Scenario Setup
+                </h3>
+
+                <p class="text-muted small mb-4">
+                    Set a target grade and enter expected marks for assessments that have not yet been graded.
+                </p>
+
+
+
+                <!-- Selected Module -->
+
+                <div class="mb-4">
+
+                    <h4 class="h6 fw-bold mb-1">
+
+                        {{ selected_module.module_code }}
+                        —
+                        {{ selected_module.module_name }}
+
+                    </h4>
 
                     <p class="text-muted small mb-0">
-                        Result based on your current and expected marks.
+
+                        {{ selected_module.semester.name }}
+                        ·
+                        {{ selected_module.semester.academic_year }}
+
                     </p>
+
                 </div>
 
 
-                <div class="card-body">
 
-                    <div class="text-center mb-4">
+                <!-- Target Grade -->
 
-                        <div
-                            class="position-relative d-inline-flex align-items-center justify-content-center"
-                            style="width: 200px; height: 200px;"
+                <div class="bg-light rounded p-3 mb-4">
+
+                    <label
+                        for="scenarioTargetGrade"
+                        class="form-label fw-semibold"
+                    >
+                        Scenario Target Grade
+                    </label>
+
+
+                    <div
+                        class="input-group"
+                        style="max-width: 260px;"
+                    >
+
+                        <input
+                            type="number"
+                            id="scenarioTargetGrade"
+                            name="target_grade"
+                            class="form-control"
+                            min="0"
+                            max="100"
+                            step="1"
+                            value="{% if target_grade is not None %}{{ target_grade }}{% endif %}"
+                            placeholder="Enter a temporary target"
                         >
 
-                            <svg
-                                width="200"
-                                height="200"
-                                viewBox="0 0 120 120"
-                                role="img"
-                                aria-label="Projected grade composition"
+                        <span class="input-group-text">
+                            %
+                        </span>
+
+                    </div>
+
+
+                    {% if selected_module.target_grade is not None %}
+
+                        <p class="text-muted small mt-2 mb-0">
+                            The default value is taken from the module target grade.
+                            You can change it for this scenario without updating the module target.
+                        </p>
+
+                    {% else %}
+
+                        <p class="text-muted small mt-2 mb-0">
+                            No target grade has been set for this module.
+                            Enter a temporary target for this scenario.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+
+                <!-- Validation Errors -->
+
+                {% if scenario_errors %}
+
+                    <div class="alert alert-danger">
+
+                        <ul class="mb-0">
+
+                            {% for error in scenario_errors %}
+
+                                <li>
+                                    {{ error }}
+                                </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    </div>
+
+                {% endif %}
+
+
+
+                <!-- Assessment Marks -->
+
+                <h4 class="h6 fw-bold mb-3">
+                    Assessment Marks
+                </h4>
+
+
+                <div class="table-responsive">
+
+                    <table class="table sap-table align-middle mb-0">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Assessment
+                                </th>
+
+                                <th>
+                                    Weight
+                                </th>
+
+                                <th>
+                                    Mark
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            {% for assessment in assessments %}
+
+                                <tr>
+
+
+                                    <td>
+
+                                        <span class="fw-semibold">
+                                            {{ assessment.assessment_name }}
+                                        </span>
+
+                                        <div class="text-muted small">
+                                            {{ assessment.get_assessment_type_display }}
+                                        </div>
+
+                                    </td>
+
+
+
+                                    <td class="text-nowrap">
+
+                                        {{ assessment.weight|floatformat:2 }}%
+
+                                    </td>
+
+
+
+                                    <td class="text-nowrap">
+
+
+                                        {% if assessment.raw_score is not None %}
+
+
+                                            <span class="fw-semibold">
+
+                                                {{ assessment.raw_score|floatformat:2 }}
+                                                /
+                                                {{ assessment.maximum_score|floatformat:2 }}
+
+                                            </span>
+
+
+                                        {% else %}
+
+
+                                            <div
+                                                class="input-group input-group-sm"
+                                                style="max-width: 170px;"
+                                            >
+
+                                                <input
+                                                    type="number"
+                                                    name="expected_{{ assessment.id }}"
+                                                    class="form-control"
+                                                    min="0"
+                                                    max="{{ assessment.maximum_score }}"
+                                                    step="1"
+                                                    value="{% if assessment.scenario_mark is not None %}{{ assessment.scenario_mark }}{% endif %}"
+                                                    placeholder="0"
+                                                >
+
+                                                <span class="input-group-text">
+
+                                                    /
+                                                    {{ assessment.maximum_score|floatformat:2 }}
+
+                                                </span>
+
+                                            </div>
+
+
+                                        {% endif %}
+
+
+                                    </td>
+
+
+                                </tr>
+
+
+                            {% empty %}
+
+
+                                <tr>
+
+                                    <td
+                                        colspan="3"
+                                        class="text-center text-muted py-4"
+                                    >
+                                        No assessments have been added to this module.
+                                    </td>
+
+                                </tr>
+
+
+                            {% endfor %}
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+
+                <!-- Not Added Assessment Weight -->
+
+                {% if unpublished_weight > 0 %}
+
+                    <div class="alert alert-info mt-4 mb-0">
+
+                        {{ unpublished_weight|floatformat:2 }}%
+                        of the module assessment weight has not yet been added.
+
+                        This scenario only uses the assessments currently added.
+
+                    </div>
+
+                {% endif %}
+
+
+
+                <!-- Scenario Buttons -->
+
+                <div class="d-flex flex-wrap gap-2 mt-4">
+
+                    <button
+                        type="submit"
+                        class="sap-btn sap-btn-primary"
+                    >
+                        Calculate Scenario
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="resetScenarioInputs"
+                        class="sap-btn sap-btn-secondary"
+                    >
+                        Reset Expected Marks
+                    </button>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+
+        <!-- Result -->
+
+        <div class="col-xl-5">
+
+            <div class="sap-card mb-4">
+
+
+                <h3 class="h5 fw-bold mb-2">
+                    Result
+                </h3>
+
+                <p class="text-muted small mb-4">
+                    Based on your current and expected assessment marks.
+                </p>
+
+
+
+                <!-- Projection Circle -->
+
+                <div class="text-center mb-4">
+
+                    <div
+                        class="position-relative d-inline-flex align-items-center justify-content-center"
+                        style="width: 200px; height: 200px;"
+                    >
+
+
+                        <svg
+                            width="200"
+                            height="200"
+                            viewBox="0 0 120 120"
+                            role="img"
+                            aria-label="Projected grade composition"
+                        >
+
+
+                            <circle
+                                cx="60"
+                                cy="60"
+                                r="48"
+                                fill="none"
+                                stroke="#E9ECEF"
+                                stroke-width="12"
                             >
+                            </circle>
+
+
+
+                            {% if actual_contribution > 0 %}
 
                                 <circle
                                     cx="60"
                                     cy="60"
                                     r="48"
                                     fill="none"
-                                    stroke="#e9ecef"
+                                    stroke="#198754"
                                     stroke-width="12"
-                                ></circle>
+                                    pathLength="100"
+                                    stroke-dasharray="{{ actual_contribution }} 100"
+                                    transform="rotate(-90 60 60)"
+                                >
+                                </circle>
 
-                                {% if actual_contribution > 0 %}
+                            {% endif %}
 
-                                    <circle
-                                        cx="60"
-                                        cy="60"
-                                        r="48"
-                                        fill="none"
-                                        stroke="#198754"
-                                        stroke-width="12"
-                                        pathLength="100"
-                                        stroke-dasharray="{{ actual_contribution }} 100"
-                                        transform="rotate(-90 60 60)"
-                                    ></circle>
 
-                                {% endif %}
 
-                                {% if scenario_calculated and scenario_contribution > 0 %}
+                            {% if scenario_calculated and scenario_contribution > 0 %}
 
-                                    <circle
-                                        cx="60"
-                                        cy="60"
-                                        r="48"
-                                        fill="none"
-                                        stroke="#0d6efd"
-                                        stroke-width="12"
-                                        pathLength="100"
-                                        stroke-dasharray="{{ scenario_contribution }} 100"
-                                        stroke-dashoffset="-{{ actual_contribution }}"
-                                        transform="rotate(-90 60 60)"
-                                    ></circle>
+                                <circle
+                                    cx="60"
+                                    cy="60"
+                                    r="48"
+                                    fill="none"
+                                    stroke="#0D6EFD"
+                                    stroke-width="12"
+                                    pathLength="100"
+                                    stroke-dasharray="{{ scenario_contribution }} 100"
+                                    stroke-dashoffset="-{{ actual_contribution }}"
+                                    transform="rotate(-90 60 60)"
+                                >
+                                </circle>
 
-                                {% endif %}
+                            {% endif %}
 
-                            </svg>
 
-                            <div class="position-absolute text-center">
+                        </svg>
+
+
+
+                        <div class="position-absolute text-center">
+
+
+                            {% if scenario_calculated %}
+
+                                <div class="h2 fw-bold mb-0">
+
+                                    {{ projected_grade|floatformat:2 }}%
+
+                                </div>
+
+
+                            {% elif actual_contribution > 0 %}
+
+                                <div class="h2 fw-bold mb-0">
+
+                                    {{ actual_contribution|floatformat:2 }}%
+
+                                </div>
+
+
+                            {% else %}
+
+                                <div class="h2 fw-bold text-muted mb-0">
+
+                                    —
+
+                                </div>
+
+                            {% endif %}
+
+
+
+                            <div class="text-muted small">
+
 
                                 {% if scenario_calculated %}
 
-                                    <div class="h2 fw-bold mb-0">
-                                        {{ projected_grade|floatformat:2 }}%
-                                    </div>
+                                    {% if unpublished_weight > 0 %}
 
-                                {% elif actual_contribution > 0 %}
-
-                                    <div class="h2 fw-bold mb-0">
-                                        {{ actual_contribution|floatformat:2 }}%
-                                    </div>
-
-                                {% else %}
-
-                                    <div class="h2 fw-bold text-muted mb-0">
-                                        —
-                                    </div>
-
-                                {% endif %}
-
-                                <div class="text-muted small">
-
-                                    {% if scenario_calculated %}
-
-                                        {% if unpublished_weight > 0 %}
-                                            Published Contribution
-                                        {% else %}
-                                            Projected Grade
-                                        {% endif %}
-
-                                    {% elif actual_contribution > 0 %}
-
-                                        Current Result
+                                        Added Assessment Contribution
 
                                     {% else %}
 
                                         Projected Grade
 
                                     {% endif %}
-                                </div>
+
+
+                                {% elif actual_contribution > 0 %}
+
+                                    Current Contribution
+
+                                {% else %}
+
+                                    Projected Grade
+
+                                {% endif %}
+
 
                             </div>
 
-                        </div>
-
-                    </div>
-
-                    <div class="border rounded p-3 mb-4">
-
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-
-                            <span class="d-flex align-items-center gap-2">
-                                <span
-                                    class="rounded-circle bg-success d-inline-block"
-                                    style="width: 10px; height: 10px;"
-                                ></span>
-                                <span class="text-muted">Actual Results</span>
-                            </span>
-
-                            <span class="fw-semibold">
-                                {{ actual_contribution|floatformat:2 }}%
-                            </span>
 
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center">
 
-                            <span class="d-flex align-items-center gap-2">
-                                <span
-                                    class="rounded-circle bg-primary d-inline-block"
-                                    style="width: 10px; height: 10px;"
-                                ></span>
-                                <span class="text-muted">Expected Results</span>
+                    </div>
+
+                </div>
+
+
+
+
+                <!-- Actual and Expected Contributions -->
+
+                <div class="border rounded p-3 mb-4">
+
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                        <span class="d-flex align-items-center gap-2">
+
+                            <span
+                                class="rounded-circle bg-success d-inline-block"
+                                style="width: 10px; height: 10px;"
+                            >
                             </span>
 
-                            <span class="fw-semibold">
-                                {% if scenario_calculated %}
-                                    {{ scenario_contribution|floatformat:2 }}%
-                                {% else %}
-                                    —
-                                {% endif %}
+                            <span class="text-muted">
+                                Actual Contribution
                             </span>
 
-                        </div>
-
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Assessment Coverage</span>
-                        <span class="fw-semibold">{{ published_weight|floatformat:2 }}%</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Target Grade</span>
-                        <span class="fw-semibold">{{ target_grade|floatformat:2 }}%</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Difference</span>
-                        <span class="fw-semibold">
-                            {% if gap_to_target is not None %}
-                                {% if gap_to_target >= 0 %}
-                                    +{{ gap_to_target|floatformat:2 }}%
-                                {% else %}
-                                    {{ gap_to_target|floatformat:2 }}%
-                                {% endif %}
-                            {% else %}
-                                —
-                            {% endif %}
                         </span>
+
+
+                        <span class="fw-semibold">
+
+                            {{ actual_contribution|floatformat:2 }}%
+
+                        </span>
+
                     </div>
+
+
 
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted">Status</span>
 
-                        {% if scenario_status == "target_met" %}
-                            <span class="badge bg-success">Target Met</span>
-                        {% elif scenario_status == "below_target" %}
-                            <span class="badge bg-danger">Below Target</span>
-                        {% elif scenario_status == "partial_projection" %}
-                            <span class="badge bg-info text-dark">Partial Projection</span>
-                        {% elif scenario_status == "incomplete" %}
-                            <span class="badge bg-warning text-dark">Missing Expected Marks</span>
-                        {% else %}
-                            <span class="badge bg-secondary">Not Calculated</span>
-                        {% endif %}
+                        <span class="d-flex align-items-center gap-2">
+
+                            <span
+                                class="rounded-circle bg-primary d-inline-block"
+                                style="width: 10px; height: 10px;"
+                            >
+                            </span>
+
+                            <span class="text-muted">
+                                Expected Contribution
+                            </span>
+
+                        </span>
+
+
+                        <span class="fw-semibold">
+
+                            {% if scenario_calculated %}
+
+                                {{ scenario_contribution|floatformat:2 }}%
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
                     </div>
 
+
+                </div>
+
+
+
+
+                <!-- Target Grade -->
+
+                <div class="d-flex justify-content-between mb-3">
+
+                    <span class="text-muted">
+                        Target Grade
+                    </span>
+
+
+                    <span class="fw-semibold">
+
+                        {% if target_grade is not None %}
+
+                            {{ target_grade|floatformat:2 }}%
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+
+                <!-- Difference -->
+
+                <div class="d-flex justify-content-between mb-3">
+
+                    <span class="text-muted">
+                        Difference
+                    </span>
+
+
+                    <span class="fw-semibold">
+
+                        {% if gap_to_target is not None %}
+
+                            {% if gap_to_target >= 0 %}
+
+                                +{{ gap_to_target|floatformat:2 }}%
+
+                            {% else %}
+
+                                {{ gap_to_target|floatformat:2 }}%
+
+                            {% endif %}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+
+                <!-- Scenario Status -->
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <span class="text-muted">
+                        Status
+                    </span>
+
+
                     {% if scenario_status == "target_met" %}
-                        <div class="alert alert-success mt-4 mb-0">
-                            The projected final grade meets the selected target.
-                        </div>
+
+                        <span class="badge bg-success">
+                            Target Met
+                        </span>
+
+
                     {% elif scenario_status == "below_target" %}
-                        <div class="alert alert-danger mt-4 mb-0">
-                            The projected final grade is below the selected target.
-                        </div>
+
+                        <span class="badge bg-danger">
+                            Below Target
+                        </span>
+
+
                     {% elif scenario_status == "partial_projection" %}
-                        <div class="alert alert-info mt-4 mb-0">
-                            This projection uses {{ published_weight|floatformat:2 }}%
-                            of the module. The remaining {{ unpublished_weight|floatformat:2 }}%
-                            has not yet been published.
-                        </div>
+
+                        <span class="badge bg-info text-dark">
+                            Partial Projection
+                        </span>
+
+
                     {% elif scenario_status == "incomplete" %}
-                        <div class="alert alert-warning mt-4 mb-0">
-                            Enter an expected mark for every published assessment
-                            that has not yet been graded.
-                        </div>
-                    {% else %}
-                        <div class="alert alert-light border mt-4 mb-0">
-                            Enter expected marks and calculate the scenario.
-                        </div>
-                    {% endif %}
 
-                </div>
+                        <span class="badge bg-warning text-dark">
+                            Missing Expected Marks
+                        </span>
 
-            </div>
-
-
-        </div>
-    </div>
-
-    <div class="row mt-4">
-
-        <div class="col-12">
-
-            <div class="card shadow-sm border-0">
-
-                <div class="card-header bg-white px-4 py-3">
-
-                    <h3 class="h5 fw-bold mb-2">
-                        Grade Breakdown
-                    </h3>
-
-                    <p class="text-muted small mb-0">
-                        See how each assessment contributes to your projected module grade.
-                    </p>
-
-                </div>
-
-
-                <div class="card-body p-3">
-
-                    {% if scenario_calculated %}
-
-                        <div class="table-responsive">
-
-                            <table class="table align-middle mb-0">
-
-                                <thead class="table-light">
-
-                                    <tr>
-                                        <th class="border-0 py-3">
-                                            Assessment
-                                        </th>
-
-                                        <th class="border-0 py-3 text-end">
-                                            Weight
-                                        </th>
-
-                                        <th class="border-0 py-3 text-end">
-                                            Mark Used
-                                        </th>
-
-                                        <th class="border-0 py-3 text-end">
-                                            Contribution
-                                        </th>
-                                    </tr>
-
-                                </thead>
-
-                                <tbody>
-
-                                    {% for item in calculation_breakdown %}
-
-                                        <tr>
-
-                                            <td class="py-3">
-
-                                                <div class="fw-semibold mb-1">
-                                                    {{ item.assessment_name }}
-                                                </div>
-
-                                                {% if item.result_type == "Actual" %}
-
-                                                    <span class="badge bg-success-subtle text-success">
-                                                        Actual
-                                                    </span>
-
-                                                {% else %}
-
-                                                    <span class="badge bg-primary-subtle text-primary">
-                                                        Expected
-                                                    </span>
-
-                                                {% endif %}
-
-                                            </td>
-
-                                            <td class="py-3 text-end text-nowrap">
-                                                {{ item.weight|floatformat:2 }}%
-                                            </td>
-
-                                            <td class="py-3 text-end text-nowrap">
-                                                {{ item.mark|floatformat:2 }}
-                                                /
-                                                {{ item.maximum_score|floatformat:2 }}
-                                            </td>
-
-                                            <td class="py-3 text-end text-nowrap">
-
-                                                <span class="fw-bold">
-                                                    {{ item.contribution|floatformat:2 }}%
-                                                </span>
-
-                                            </td>
-
-                                        </tr>
-
-                                    {% endfor %}
-
-
-                                    <tr class="table-primary">
-
-                                        <td class="py-3 fw-bold">
-
-                                            {% if unpublished_weight > 0 %}
-                                                Total (Published)
-                                            {% else %}
-                                                Total
-                                            {% endif %}
-
-                                        </td>
-
-                                        <td class="py-3 text-end fw-bold text-nowrap">
-                                            {{ published_weight|floatformat:2 }}%
-                                        </td>
-
-                                        <td class="py-3 text-end text-muted">
-                                            —
-                                        </td>
-
-                                        <td class="py-3 text-end fw-bold text-nowrap">
-                                            {{ projected_grade|floatformat:2 }}%
-                                        </td>
-
-                                    </tr>
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
 
                     {% else %}
 
-                        <div class="text-center text-muted px-4 py-5">
-                            Enter expected marks and calculate the scenario
-                            to see how your projected grade is calculated.
-                        </div>
+                        <span class="badge bg-secondary">
+                            Not Calculated
+                        </span>
 
                     {% endif %}
 
                 </div>
 
+
+
+
+                <!-- Scenario Message -->
+
+                {% if scenario_status == "target_met" %}
+
+                    <div class="alert alert-success mt-4 mb-0">
+
+                        The projected final grade meets the selected target.
+
+                    </div>
+
+
+                {% elif scenario_status == "below_target" %}
+
+                    <div class="alert alert-danger mt-4 mb-0">
+
+                        The projected final grade is below the selected target.
+
+                    </div>
+
+
+                {% elif scenario_status == "partial_projection" %}
+
+                    <div class="alert alert-info mt-4 mb-0">
+
+                        This projection uses
+                        {{ published_weight|floatformat:2 }}%
+                        of the module assessment weight.
+
+                        The remaining
+                        {{ unpublished_weight|floatformat:2 }}%
+                        has not yet been added.
+
+                    </div>
+
+
+                {% elif scenario_status == "incomplete" %}
+
+                    <div class="alert alert-warning mt-4 mb-0">
+
+                        Enter an expected mark for every added assessment
+                        that has not yet been graded.
+
+                    </div>
+
+
+                {% else %}
+
+                    <div class="alert alert-light border mt-4 mb-0">
+
+                        Enter expected marks and calculate the scenario.
+
+                    </div>
+
+                {% endif %}
+
+
             </div>
 
         </div>
 
+
     </div>
+
+
+
+
+    <!-- Grade Breakdown -->
+
+    <div class="sap-card mt-2">
+
+
+        <h3 class="h5 fw-bold mb-2">
+            Grade Breakdown
+        </h3>
+
+        <p class="text-muted small mb-4">
+            See how each assessment contributes to the projected module grade.
+        </p>
+
+
+
+        {% if scenario_calculated %}
+
+
+            <div class="table-responsive">
+
+
+                <table class="table sap-table align-middle mb-0">
+
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Assessment
+                            </th>
+
+                            <th class="text-end">
+                                Weight
+                            </th>
+
+                            <th class="text-end">
+                                Mark Used
+                            </th>
+
+                            <th class="text-end">
+                                Contribution
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+
+                    <tbody>
+
+
+                        {% for item in calculation_breakdown %}
+
+
+                            <tr>
+
+
+                                <td>
+
+                                    <div class="fw-semibold mb-1">
+
+                                        {{ item.assessment_name }}
+
+                                    </div>
+
+
+                                    {% if item.result_type == "Actual" %}
+
+                                        <span class="badge bg-success-subtle text-success">
+                                            Actual
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-primary-subtle text-primary">
+                                            Expected
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+
+                                <td class="text-end text-nowrap">
+
+                                    {{ item.weight|floatformat:2 }}%
+
+                                </td>
+
+
+
+                                <td class="text-end text-nowrap">
+
+                                    {{ item.mark|floatformat:2 }}
+                                    /
+                                    {{ item.maximum_score|floatformat:2 }}
+
+                                </td>
+
+
+
+                                <td class="text-end text-nowrap">
+
+                                    <span class="fw-bold">
+
+                                        {{ item.contribution|floatformat:2 }}%
+
+                                    </span>
+
+                                </td>
+
+
+                            </tr>
+
+
+                        {% endfor %}
+
+
+
+                        <tr class="table-light">
+
+
+                            <td class="fw-bold">
+
+                                {% if unpublished_weight > 0 %}
+
+                                    Total (Added)
+
+                                {% else %}
+
+                                    Total
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td class="text-end fw-bold text-nowrap">
+
+                                {{ published_weight|floatformat:2 }}%
+
+                            </td>
+
+
+                            <td class="text-end text-muted">
+
+                                —
+
+                            </td>
+
+
+                            <td class="text-end fw-bold text-nowrap">
+
+                                {{ projected_grade|floatformat:2 }}%
+
+                            </td>
+
+
+                        </tr>
+
+
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
+
+
+
+        {% else %}
+
+
+            <div class="text-center text-muted py-5">
+
+                Enter expected marks and calculate the scenario
+                to see how the projected grade is calculated.
+
+            </div>
+
+
+        {% endif %}
+
+
+    </div>
+
 
 </form>
+
+
 {% endif %}
 
+
+
+
 <script>
+
     document.addEventListener("DOMContentLoaded", function () {
-        const resetButton = document.getElementById("resetScenarioInputs");
+
+        const resetButton =
+            document.getElementById("resetScenarioInputs");
+
 
         if (!resetButton) {
+
             return;
+
         }
 
+
         resetButton.addEventListener("click", function () {
-            const expectedMarkInputs = document.querySelectorAll(
-                'input[name^="expected_"]'
-            );
+
+            const expectedMarkInputs =
+                document.querySelectorAll(
+                    'input[name^="expected_"]'
+                );
+
 
             expectedMarkInputs.forEach(function (input) {
+
                 input.value = "";
+
             });
+
         });
+
     });
+
 </script>
+
+
 {% endblock %}

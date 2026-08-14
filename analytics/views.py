@@ -84,6 +84,9 @@ def analytics(request):
             else:
                 target_grade = None
 
+            if current_performance is None and target_grade is None:
+                continue
+
             module_performance.append(
                 {
                     "module": module,
@@ -141,11 +144,20 @@ def analytics(request):
                 Decimal("0"),
             )
 
+            # Assessment weight that has not yet been added to the system
+            recorded_weight = completed_weight + remaining_weight
+
+            not_added_weight = max(
+                Decimal("100") - recorded_weight,
+                Decimal("0")
+            )
+
             weight_completion.append(
                 {
                     "module": module,
                     "completed_weight": completed_weight,
                     "remaining_weight": remaining_weight,
+                    "not_added_weight": not_added_weight,
 
                     "completed_width": min(
                         max(float(completed_weight), 0),
@@ -156,8 +168,14 @@ def analytics(request):
                         max(float(remaining_weight), 0),
                         100
                     ),
+
+                    "not_added_width": min(
+                        max(float(not_added_weight), 0),
+                        100
+                    ),
                 }
             )
+    
 
         today = timezone.localdate()
 

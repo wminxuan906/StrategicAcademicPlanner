@@ -1,0 +1,348 @@
+/* Card components */
+
+.sap-card {
+
+    background-color: #FFFFFF;
+
+    border: 1px solid #DEE2E6;
+
+    border-radius: 12px;
+
+    padding: 24px;
+
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+}
+
+
+.sap-card:hover {
+
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+
+}
+
+
+.sap-card-title {
+
+    font-size: 20px;
+
+    font-weight: 600;
+
+    color: var(--text-primary);
+
+    margin-bottom: 16px;
+
+}
+
+
+/* Dashboard metric cards */
+
+.sap-metric-card {
+
+    background-color: #FFFFFF;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: var(--card-radius);
+
+    padding: 32px 24px;
+
+    text-align:center;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+
+}
+
+.sap-metric-label {
+
+    font-size: 14px;
+
+    color: var(--text-secondary);
+
+    margin-bottom: 8px;
+
+}
+
+
+.sap-metric-value {
+
+    font-size: 32px;
+
+    font-weight: 700;
+
+    color: var(--text-primary);
+
+}
+
+
+/* Dashboard priority card */
+
+.sap-priority-card {
+
+    background-color: #FFFFFF;
+
+    border: 1px solid #DEE2E6;
+
+    border-radius: 12px;
+
+    padding: 20px;
+
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+    margin-bottom:16px;
+
+}
+
+
+/* Assessment status badges */
+
+.sap-status-badge {
+
+    display: inline-block;
+
+    padding: 4px 10px;
+
+    border-radius: 12px;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+}
+.sap-focus-badge {
+
+display:inline-block;
+
+padding:4px 10px;
+
+border-radius:12px;
+
+background-color:#E7F1FF;
+
+color:#0D6EFD;
+
+border:1px solid #B6D4FE;
+
+font-size:12px;
+
+font-weight:600;
+
+}
+
+.status-not-started {
+
+    background-color: #E9ECEF;
+
+    color: #495057;
+
+}
+
+
+.status-submitted {
+
+    background-color: #E7F1FF;
+
+    color: #0D6EFD;
+
+}
+
+
+.status-graded {
+
+    background-color: #D1E7DD;
+
+    color: #146C43;
+
+}
+
+
+/* Academic priority tags */
+
+.sap-priority-tag {
+
+    display: inline-block;
+
+    padding: 4px 10px;
+
+    border-radius: 12px;
+
+    font-size: 12px;
+
+    font-weight: 500;
+
+}
+
+
+.priority-deadline {
+
+    background-color: #FFF3CD;
+
+    color: #664D03;
+
+}
+
+
+.priority-effort {
+
+    background-color: #EDE9FE;
+
+    color: #6D28D9;
+
+}
+
+
+.priority-contribution {
+
+    background-color: #E7F1FF;
+
+    color: #0D6EFD;
+
+}
+
+
+.priority-target {
+
+    background-color: #F8D7DA;
+
+    color: #842029;
+
+}
+
+
+/* Target information */
+
+.sap-target-badge {
+
+    display: inline-block;
+
+    padding: 4px 10px;
+
+    border-radius: 12px;
+
+    background-color: #F8F9FA;
+
+    color: #495057;
+
+    border: 1px solid #DEE2E6;
+
+    font-size: 12px;
+
+    font-weight: 500;
+
+}
+
+
+/* Progress component */
+
+.sap-progress {
+
+    height: 10px;
+
+    background-color: #E9ECEF;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+}
+
+
+.sap-progress-bar {
+
+    height: 100%;
+
+    background-color: var(--primary-color);
+
+    border-radius: 10px;
+
+}
+
+/* Buttons */
+
+.sap-btn {
+    display:inline-block;
+    padding:7px 14px;
+    border:1px solid transparent;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:500;
+    text-decoration:none;
+    transition:0.2s ease;
+    cursor:pointer;
+}
+
+
+.sap-btn-primary {
+    background-color:var(--primary-color);
+    color:white;
+    border-color:var(--primary-color);
+}
+
+
+.sap-btn-secondary {
+    background-color:transparent;
+    color:#6C757D;
+    border:1px solid #6C757D;
+}
+
+
+.sap-btn-danger {
+    background-color:#FFFFFF;
+    color:var(--danger-color);
+    border:1px solid var(--danger-color);
+}
+
+
+.sap-btn-primary:hover {
+    background-color:#0B5ED7;
+    border-color:#0B5ED7;
+    color:white;
+}
+
+
+.sap-btn-secondary:hover {
+    background-color:#6C757D;
+    color:white;
+}
+
+
+.sap-btn-danger:hover {
+    background-color:#DC3545;
+    color:white;
+}
+
+
+.sap-btn:focus-visible {
+    outline:3px solid rgba(13,110,253,0.35);
+    outline-offset:2px;
+}
+
+.sap-table th {
+
+    padding:12px 16px;
+
+    font-weight:600;
+
+    color:var(--text-secondary);
+
+    border-bottom:1px solid var(--border-color);
+
+    text-align:left;
+
+}
+
+
+.sap-table td {
+
+    padding: 12px 16px;
+
+    vertical-align: middle;
+
+}
+
+
+.sap-table tbody tr:hover {
+    background-color: #F8FAFC;
+}

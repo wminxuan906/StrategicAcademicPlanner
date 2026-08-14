@@ -1,21 +1,78 @@
+:root {
+
+    /* Main colours */
+    --primary-color: #0D6EFD;
+    --primary-light:#E7F1FF;
+    --background-color: #F8FAFC;
+    --surface-color: #FFFFFF;
+    --border-color: #DEE2E6;
+
+    --text-primary: #212529;
+    --text-secondary: #6C757D;
+
+
+    /* Status colours */
+    --success-color: #198754;
+    --warning-color: #FFC107;
+    --danger-color: #DC3545;
+
+
+    /* Common sizes */
+    --card-radius: 12px;
+    --button-radius: 8px;
+
+}
+
 body {
-    background-color: #f7f8fb;
+
+    background-color:var(--background-color);
+
+    color:var(--text-primary);
+
+    font-family:
+    "Inter",
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
 }
 
 .sidebar {
-    width: 260px;
-    min-height: 100vh;
+    width: 250px;
+    min-width: 250px;
+    flex-shrink: 0;
 }
+
+.sidebar {
+    display:flex;
+    flex-direction:column;
+}
+
 
 .sidebar .nav-link {
-    color: #1f2937;
-    border-radius: 8px;
-    padding: 10px 12px;
+
+    color:var(--text-primary);
+
+    border-radius:var(--button-radius);
+
+    padding:10px 12px;
+
 }
 
+
 .sidebar .nav-link:hover {
-    background-color: #eef2ff;
-    color: #4f46e5;
+
+    background-color:var(--primary-light);
+
+    color:var(--primary-color);
+
+}
+
+.sidebar .nav-link.active {
+
+    background-color:var(--primary-light);
+    color:var(--primary-color);
+
 }
 
 .topbar {
