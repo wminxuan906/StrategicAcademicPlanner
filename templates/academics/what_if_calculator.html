@@ -1048,43 +1048,4 @@ What-if Calculator
 
 {% endif %}
 
-
-
-
-<script>
-
-    document.addEventListener("DOMContentLoaded", function () {
-
-        const resetButton =
-            document.getElementById("resetScenarioInputs");
-
-
-        if (!resetButton) {
-
-            return;
-
-        }
-
-
-        resetButton.addEventListener("click", function () {
-
-            const expectedMarkInputs =
-                document.querySelectorAll(
-                    'input[name^="expected_"]'
-                );
-
-
-            expectedMarkInputs.forEach(function (input) {
-
-                input.value = "";
-
-            });
-
-        });
-
-    });
-
-</script>
-
-
 {% endblock %}

@@ -341,8 +341,8 @@
                             {% if item.current_performance is not None %}
 
                             <div
-                                class="performance-bar"
-                                style="height: {{ item.current_height }}%;"
+                                class="performance-bar js-height-bar"
+                                data-height="{{ item.current_height }}"
                             >
 
                                 <span class="bar-value">
@@ -357,8 +357,8 @@
                             {% if item.target_grade is not None %}
 
                             <div
-                                class="target-bar"
-                                style="height: {{ item.target_height }}%;"
+                                class="target-bar js-height-bar"
+                                data-height="{{ item.target_height }}"
                             >
 
                                 <span class="bar-value">
@@ -479,18 +479,18 @@
                 <div class="weight-bar">
 
                     <div
-                        class="weight-completed"
-                        style="width: {{ item.completed_width }}%;"
+                        class="weight-completed js-width-bar"
+                        data-width="{{ item.completed_width }}"
                     ></div>
 
                     <div
-                        class="weight-remaining"
-                        style="width: {{ item.remaining_width }}%;"
+                        class="weight-remaining js-width-bar"
+                        data-width="{{ item.remaining_width }}"
                     ></div>
 
                     <div
-                        class="weight-not-added"
-                        style="width: {{ item.not_added_width }}%;"
+                        class="weight-not-added js-width-bar"
+                        data-width="{{ item.not_added_width }}"
                     ></div>
 
                 </div>
@@ -557,8 +557,8 @@
             <div class="workload-track">
 
                 <div
-                    class="workload-bar"
-                    style="width: {{ item.bar_width }}%;"
+                    class="workload-bar js-width-bar"
+                    data-width="{{ item.bar_width }}"
                 ></div>
 
             </div>
