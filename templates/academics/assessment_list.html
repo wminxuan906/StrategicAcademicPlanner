@@ -184,7 +184,13 @@ Assessments
 
 </span>
 
+{% elif assessment.status == "In Progress" %}
 
+<span class="sap-status-badge status-in-progress">
+
+    {{ assessment.status }}
+
+</span>
 
 {% elif assessment.status == "Submitted" %}
 

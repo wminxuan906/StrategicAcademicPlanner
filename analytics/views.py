@@ -119,15 +119,12 @@ def analytics(request):
 
             assessments = module.assessments.all()
 
-            # Submitted and graded assessments are counted as completed
+            # Assessments with a recorded mark are counted as completed
             completed_weight = sum(
                 (
                     assessment.weight
                     for assessment in assessments
-                    if assessment.status in [
-                        Assessment.SUBMITTED,
-                        Assessment.GRADED,
-                    ]
+                    if assessment.raw_score is not None
                 ),
                 Decimal("0"),
             )
@@ -136,10 +133,7 @@ def analytics(request):
                 (
                     assessment.weight
                     for assessment in assessments
-                    if assessment.status in [
-                        Assessment.NOT_STARTED,
-                        Assessment.IN_PROGRESS,
-                    ]
+                    if assessment.raw_score is None
                 ),
                 Decimal("0"),
             )

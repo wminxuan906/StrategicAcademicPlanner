@@ -9,12 +9,6 @@ from .forms import (
     WhatIfCalculatorForm,
 )
 
-
-@login_required(login_url="/accounts/login/")
-def academic_management(request):
-    return render(request, "academic_management.html")
-
-
 @login_required(login_url="/accounts/login/")
 def semester_list(request):
 

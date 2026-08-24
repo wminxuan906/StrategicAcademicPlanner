@@ -98,15 +98,6 @@ def dashboard(request):
             ):
                 attention_factor.append("High contribution")
 
-            if attention_factor:
-                focus_assessments.append(
-                    {
-                        "assessment": assessment,
-                        "factors": attention_factor,
-                        "factor_count": len(attention_factor),
-                    }
-                )
-
             module = assessment.module
 
             if (
@@ -121,6 +112,14 @@ def dashboard(request):
                 if current_performance < module.target_grade:
                     attention_factor.append("Below target")
 
+            if attention_factor:
+                focus_assessments.append(
+                    {
+                        "assessment": assessment,
+                        "factors": attention_factor,
+                        "factor_count": len(attention_factor),
+                    }
+                )
 
         focus_assessments.sort(
             key=lambda item: (

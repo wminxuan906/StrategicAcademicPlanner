@@ -5,7 +5,6 @@ from . import views
 app_name = "academics"
 
 urlpatterns = [
-    path("", views.academic_management, name="academic_management"),
 
     path("semesters/", views.semester_list, name="semester_list"),
     path("semesters/create/", views.semester_create, name="semester_create"),

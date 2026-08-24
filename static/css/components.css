@@ -148,6 +148,10 @@ font-weight:600;
 
 }
 
+.status-in-progress {
+    background-color: #FFF3CD;
+    color: #664D03;
+}
 
 .status-graded {
 
