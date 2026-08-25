@@ -206,7 +206,7 @@ class Assessment(models.Model):
         choices=ASSESSMENT_TYPE_CHOICES,
     )
     weight = models.DecimalField(max_digits=5, decimal_places=2)
-    maximum_score = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    maximum_score = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal("100.00"), null=True, blank=True)
     deadline = models.DateField(null=True, blank=True)
     status = models.CharField(
         max_length=20, 

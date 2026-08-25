@@ -157,6 +157,10 @@ Add Assessment
 
                         {{ form.maximum_score }}
 
+                        <div class="form-text">
+                            Defaults to 100. Change it if this assessment uses a different maximum score.
+                        </div>
+
                         {% for error in form.maximum_score.errors %}
 
                             <div class="text-danger small mt-1">

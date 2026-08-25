@@ -439,7 +439,9 @@ def what_if_calculator(request):
 
             for assessment in assessments:
                 assessment.scenario_mark = None
-
+                assessment.scenario_maximum_score = (
+                    assessment.maximum_score or Decimal("100.00")
+                )
                 if assessment.raw_score is None:
                     continue
 
@@ -451,7 +453,7 @@ def what_if_calculator(request):
                         "result_type": "Actual",
                         "weight": assessment.weight,
                         "mark": assessment.raw_score,
-                        "maximum_score": assessment.maximum_score,
+                        "maximum_score": assessment.scenario_maximum_score,
                         "percentage": assessment.percentage_score,
                         "contribution": assessment.weighted_contribution,
                     }
@@ -499,22 +501,21 @@ def what_if_calculator(request):
                         )
                         continue
 
-                    if (
-                        assessment.maximum_score is None
-                        or assessment.maximum_score <= Decimal("0")
-                    ):
+                    maximum_score = assessment.scenario_maximum_score
+                    
+                    if maximum_score <= Decimal("0"):
                         scenario_errors.append(
                             f"{assessment.assessment_name} does not "
                             f"have a valid maximum score."
                         )
                         continue
 
-                    if expected_mark > assessment.maximum_score:
+                    if expected_mark > maximum_score:
                         scenario_errors.append(
                             f"The expected mark for "
                             f"{assessment.assessment_name} "
                             f"cannot exceed "
-                            f"{assessment.maximum_score}."
+                            f"{maximum_score}."
                         )
                         continue
 
@@ -522,7 +523,7 @@ def what_if_calculator(request):
 
                     expected_percentage = (
                         expected_mark
-                        / assessment.maximum_score
+                        / maximum_score
                     ) * Decimal("100")
 
                     contribution = (
@@ -539,7 +540,7 @@ def what_if_calculator(request):
                             "result_type": "Expected",
                             "weight": assessment.weight,
                             "mark": expected_mark,
-                            "maximum_score": assessment.maximum_score,
+                            "maximum_score": maximum_score,
                             "percentage": expected_percentage,
                             "contribution": contribution,
                         }

@@ -324,8 +324,7 @@ What-if Calculator
 
                                                 {{ assessment.raw_score|floatformat:2 }}
                                                 /
-                                                {{ assessment.maximum_score|floatformat:2 }}
-
+                                                {{ assessment.scenario_maximum_score|floatformat:2 }}
                                             </span>
 
 
@@ -342,7 +341,7 @@ What-if Calculator
                                                     name="expected_{{ assessment.id }}"
                                                     class="form-control"
                                                     min="0"
-                                                    max="{{ assessment.maximum_score }}"
+                                                    max="{{ assessment.scenario_maximum_score }}"
                                                     step="1"
                                                     value="{% if assessment.scenario_mark is not None %}{{ assessment.scenario_mark }}{% endif %}"
                                                     placeholder="0"
@@ -351,7 +350,7 @@ What-if Calculator
                                                 <span class="input-group-text">
 
                                                     /
-                                                    {{ assessment.maximum_score|floatformat:2 }}
+                                                    {{ assessment.scenario_maximum_score|floatformat:2 }}
 
                                                 </span>
 
