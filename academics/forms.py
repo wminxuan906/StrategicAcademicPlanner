@@ -232,43 +232,43 @@ class AssessmentForm(forms.ModelForm):
 
         return weight
 
-def clean(self):
-    cleaned_data = super().clean()
+    def clean(self):
+        cleaned_data = super().clean()
 
-    maximum_score = cleaned_data.get("maximum_score")
-    raw_score = cleaned_data.get("raw_score")
-    status = cleaned_data.get("status")
+        maximum_score = cleaned_data.get("maximum_score")
+        raw_score = cleaned_data.get("raw_score")
+        status = cleaned_data.get("status")
 
-    if maximum_score is None:
-        maximum_score = Decimal("100.00")
-        cleaned_data["maximum_score"] = maximum_score
+        if maximum_score is None:
+            maximum_score = Decimal("100.00")
+            cleaned_data["maximum_score"] = maximum_score
 
-    if maximum_score <= Decimal("0"):
-        self.add_error(
-            "maximum_score",
-            "Maximum score must be greater than 0."
-        )
+        if maximum_score <= Decimal("0"):
+            self.add_error(
+                "maximum_score",
+                "Maximum score must be greater than 0."
+            )
 
-    if (
-        raw_score is not None
-        and maximum_score > Decimal("0")
-        and raw_score > maximum_score
-    ):
-        self.add_error(
-            "raw_score",
-            "Raw score cannot exceed the maximum score."
-        )
+        if (
+            raw_score is not None
+            and maximum_score > Decimal("0")
+            and raw_score > maximum_score
+        ):
+            self.add_error(
+                "raw_score",
+                "Raw score cannot exceed the maximum score."
+            )
 
-    if raw_score is not None:
-        cleaned_data["status"] = Assessment.GRADED
+        if raw_score is not None:
+            cleaned_data["status"] = Assessment.GRADED
 
-    elif status == Assessment.GRADED:
-        self.add_error(
-            "raw_score",
-            "A raw score is required for a graded assessment."
-        )
+        elif status == Assessment.GRADED:
+            self.add_error(
+                "raw_score",
+                "A raw score is required for a graded assessment."
+            )
 
-    return cleaned_data
+        return cleaned_data
 
 class WhatIfCalculatorForm(forms.Form):
     module = forms.ModelChoiceField(
