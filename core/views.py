@@ -20,6 +20,7 @@ def dashboard(request):
 
     semester_id = request.GET.get("semester")
 
+    # Use the selected semester or default to the first available semester
     if semester_id:
         selected_semester = get_object_or_404(
             Semester,
@@ -35,8 +36,10 @@ def dashboard(request):
     focus_assessments = []
     academic_guidance = []
 
+    # Only calculate dashboard data when the user has a semester
     if selected_semester:
 
+        # Count modules and assessments in the selected semester
         modules_count = selected_semester.modules.count()
 
         assessments = Assessment.objects.filter(
@@ -47,6 +50,7 @@ def dashboard(request):
 
         today = timezone.localdate()
 
+        # Count unfinished assessments with a current or future deadline
         upcoming_count = assessments.filter(
             deadline__isnull=False,
             deadline__gte=today,
@@ -59,6 +63,7 @@ def dashboard(request):
 
         focus_assessments = []
 
+        # Exclude submitted and graded assessments from prioritisation
         unfinished_assessments = assessments.exclude(
             status__in=[
                 Assessment.SUBMITTED,
@@ -66,6 +71,7 @@ def dashboard(request):
             ]
         )
 
+        # Check each unfinished assessment against the attention factors
         for assessment in assessments:
             if assessment.status in [
                 Assessment.SUBMITTED,
@@ -75,15 +81,18 @@ def dashboard(request):
 
             attention_factor = []
 
+            # Factor 1: the deadline is within the next 14 days
             if(
                 assessment.deadline
                 and today <= assessment.deadline <= today + timedelta(days=14)
             ):
                 attention_factor.append("Close deadline")
 
+            # Factor 2: the assessment has a high effort level
             if assessment.effort_level == Assessment.HIGH:
                 attention_factor.append("High effort")
 
+            # Factor 3: it has the highest weight among unfinished module work
             module_unfinished = unfinished_assessments.filter(
                 module=assessment.module
             )
@@ -100,6 +109,7 @@ def dashboard(request):
 
             module = assessment.module
 
+            # Factor 4: current module performance is below the saved target
             if (
                 module.target_grade is not None
                 and module.completed_weight > 0
@@ -112,6 +122,7 @@ def dashboard(request):
                 if current_performance < module.target_grade:
                     attention_factor.append("Below target")
 
+            # Only show assessments that meet at least one attention factor
             if attention_factor:
                 focus_assessments.append(
                     {
@@ -121,6 +132,7 @@ def dashboard(request):
                     }
                 )
 
+        # Rank by the number of factors, then use the earlier deadline
         focus_assessments.sort(
             key=lambda item: (
                 -item["factor_count"],
@@ -130,6 +142,7 @@ def dashboard(request):
 
         modules = selected_semester.modules.all()
 
+        # Calculate the average still required to reach each module target
         for module in modules:
             if module.target_grade is not None:
 
@@ -145,7 +158,7 @@ def dashboard(request):
                     }
                 )
         
-
+    # Pass the dashboard summary, priorities and guidance to the template
     context = {
         "semesters": semesters,
         "selected_semester": selected_semester,
@@ -162,6 +175,7 @@ def dashboard(request):
 @login_required(login_url="/accounts/login/")
 def settings(request):
 
+    # Display both forms with the current user's existing information
     account_form = AccountUpdateForm(
         instance=request.user
     )

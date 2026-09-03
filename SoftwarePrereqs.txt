@@ -1,0 +1,86 @@
+Strategic Academic Planner
+Software Prerequisites
+
+1. Overall Software Stack
+
+Project Type: Python Django Web Application
+IDE: Visual Studio Code
+Programming Language: Python 3.13.7
+Backend Framework: Django 6.0.6
+Frontend: HTML5, CSS3, Bootstrap 5.3.3, JavaScript
+JavaScript Framework: None
+Local Database: SQLite
+Deployment Database: PostgreSQL
+Version Control: Git
+Deployment Platform: Render
+
+
+2. Key Supporting Packages / Libraries
+
+Package                       Version
+--------------------------------
+asgiref                          3.11.1
+dj-database-url           3.1.2
+Django                         6.0.6
+gunicorn                      26.2.0
+psycopg2-binary        2.9.12
+sqlparse                       0.5.5
+tzdata                          2026.2
+whitenoise                  6.12.0
+
+The complete Python dependency list is also provided in requirements.txt.
+
+
+3. Local Installation and Setup
+
+Prerequisites:
+
+- Python 3.13 or a compatible version
+- pip
+
+The following instructions assume that the project files have been extracted
+and the command line is opened in the project root directory.
+
+1. Create a virtual environment:
+
+   python -m venv venv
+
+2. Activate the virtual environment on Windows:
+
+   venv\Scripts\activate
+
+3. Install the required Python packages:
+
+   pip install -r requirements.txt
+
+4. Apply the database migrations:
+
+   python manage.py migrate
+
+5. Start the Django development server:
+
+   python manage.py runserver
+
+6. Open the application in a web browser at:
+
+   http://127.0.0.1:8000/
+
+
+4. Testing
+
+To run the automated test suite:
+
+   python manage.py test
+
+
+5. Additional Notes
+
+The application uses SQLite by default for local development, so a separate
+database server is not required for local setup.
+
+The deployed version uses PostgreSQL. Deployment-specific configuration is
+provided through environment variables, including SECRET_KEY, DEBUG,
+ALLOWED_HOSTS and DATABASE_URL.
+
+Gunicorn is used as the production WSGI server and WhiteNoise is used for
+serving static files.

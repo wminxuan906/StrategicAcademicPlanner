@@ -29,6 +29,7 @@ class SemesterForm(forms.ModelForm):
 
 
 class ModuleForm(forms.ModelForm):
+    # Use widgets to provide consistent Bootstrap styling and input limits
     class Meta:
         model = Module
         fields = [
@@ -81,16 +82,19 @@ class ModuleForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Limit semester choices to semesters owned by the current user
         if user:
             self.fields["semester"].queryset = Semester.objects.filter(
                 user=user
             ).order_by("-academic_year", "name")
         else:
+            # Show no semester choices when a user is not provided
             self.fields["semester"].queryset = Semester.objects.none()
 
 
 class AssessmentForm(forms.ModelForm):
 
+    # Collect the assessment details used for planning and grade tracking
     class Meta:
         model = Assessment
 
@@ -177,6 +181,7 @@ class AssessmentForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
+        # Limit module choices to modules in the current user's semesters
         if user:
 
             self.fields["module"].queryset = (
@@ -192,9 +197,11 @@ class AssessmentForm(forms.ModelForm):
 
         else:
 
+            # Show no module choices when a user is not provided
             self.fields["module"].queryset = Module.objects.none()
     
     def clean_weight(self):
+        # Validate the submitted weight against other assessments in the module
         weight = self.cleaned_data.get("weight")
         module = self.cleaned_data.get("module")
 
@@ -205,11 +212,13 @@ class AssessmentForm(forms.ModelForm):
             module=module
         )
 
+        # Exclude the current record so its old weight is not counted on update
         if self.instance.pk:
             assessments = assessments.exclude(
                 pk=self.instance.pk
             )
 
+        # Add the weights of the module's other assessments
         existing_weight = sum(
             (
                 assessment.weight
@@ -220,6 +229,7 @@ class AssessmentForm(forms.ModelForm):
 
         total_weight = existing_weight + weight
 
+         # Prevent the total assessment weight from exceeding 100 percent
         if total_weight > Decimal("100"):
             remaining_weight = (
                 Decimal("100") - existing_weight
@@ -233,22 +243,26 @@ class AssessmentForm(forms.ModelForm):
         return weight
 
     def clean(self):
+        # Validate values that depend on more than one assessment field
         cleaned_data = super().clean()
 
         maximum_score = cleaned_data.get("maximum_score")
         raw_score = cleaned_data.get("raw_score")
         status = cleaned_data.get("status")
 
+        # Use a percentage scale when no maximum score is provided
         if maximum_score is None:
             maximum_score = Decimal("100.00")
             cleaned_data["maximum_score"] = maximum_score
 
+        # A valid maximum score must be greater than zero
         if maximum_score <= Decimal("0"):
             self.add_error(
                 "maximum_score",
                 "Maximum score must be greater than 0."
             )
 
+        # Prevent an actual mark from exceeding the assessment maximum
         if (
             raw_score is not None
             and maximum_score > Decimal("0")
@@ -259,6 +273,7 @@ class AssessmentForm(forms.ModelForm):
                 "Raw score cannot exceed the maximum score."
             )
 
+        # Keep the assessment status consistent with the recorded mark
         if raw_score is not None:
             cleaned_data["status"] = Assessment.GRADED
 
@@ -271,6 +286,7 @@ class AssessmentForm(forms.ModelForm):
         return cleaned_data
 
 class WhatIfCalculatorForm(forms.Form):
+    # Start with no module choices until the current user is provided
     module = forms.ModelChoiceField(
         queryset=Module.objects.none(),
         widget=forms.Select(
@@ -280,6 +296,7 @@ class WhatIfCalculatorForm(forms.Form):
         ),
     )
 
+    # Allow an optional temporary target between zero and one hundred
     target_grade = forms.DecimalField(
         required=False,
         min_value=0,
@@ -300,6 +317,7 @@ class WhatIfCalculatorForm(forms.Form):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Only show modules that belong to the logged-in user
         if user:
             self.fields["module"].queryset = (
                 Module.objects.filter(

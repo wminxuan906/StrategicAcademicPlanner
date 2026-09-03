@@ -11,6 +11,7 @@ from django.urls import reverse
 class AssessmentCalculationTests(TestCase):
 
     def setUp(self):
+        # Create the user, semester and module shared by these unit tests
         self.user = User.objects.create_user(
             username="testuser",
             password="testpassword123"
@@ -30,6 +31,7 @@ class AssessmentCalculationTests(TestCase):
         )
 
     def test_assessment_grade_calculation(self):
+        # Check percentage score and weighted contribution calculations
         assessment = Assessment.objects.create(
             module=self.module,
             assessment_name="Coursework 1",
@@ -50,6 +52,7 @@ class AssessmentCalculationTests(TestCase):
         )
 
     def test_module_academic_progress_calculation(self):
+        # Create graded, ungraded and not-yet-added assessment weight
         Assessment.objects.create(
             module=self.module,
             assessment_name="Coursework 1",
@@ -77,6 +80,7 @@ class AssessmentCalculationTests(TestCase):
             raw_score=None
         )
 
+        # Check the module-level weight and contribution properties
         self.assertEqual(
             self.module.total_assessment_weight,
             Decimal("70.00")
@@ -108,6 +112,7 @@ class AssessmentCalculationTests(TestCase):
         )
 
     def test_assessment_weight_validation(self):
+        # Start with 70 percent of the module weight already recorded
         Assessment.objects.create(
             module=self.module,
             assessment_name="Coursework 1",
@@ -116,6 +121,7 @@ class AssessmentCalculationTests(TestCase):
             maximum_score=Decimal("100.00")
         )
 
+        # Adding another 40 percent should fail because the total would be 110
         form = AssessmentForm(
             data={
                 "module": self.module.id,
@@ -135,6 +141,8 @@ class AssessmentCalculationTests(TestCase):
         self.assertIn("weight", form.errors)
 
     def test_required_average_for_target_grade(self):
+
+        # Check the average required across the remaining module weight
         Assessment.objects.create(
             module=self.module,
             assessment_name="Coursework 1",
@@ -156,6 +164,7 @@ class AssessmentCalculationTests(TestCase):
 class GradeTrackingIntegrationTests(TestCase):
 
     def setUp(self):
+        # Create and log in a user with saved academic data
         self.user = User.objects.create_user(
             username="integrationuser",
             password="testpassword123"
@@ -189,6 +198,7 @@ class GradeTrackingIntegrationTests(TestCase):
         )
 
     def test_assessment_mark_update_reflected_in_grade_tracking(self):
+        # Update the saved mark before requesting the Grade Tracking page
         self.assessment.raw_score = Decimal("80.00")
         self.assessment.save()
 
@@ -210,11 +220,13 @@ class GradeTrackingIntegrationTests(TestCase):
             Decimal("40.00")
         )
 
+        # Confirm that the updated mark is also shown in the response
         self.assertContains(response, "80")
 
 class WhatIfCalculatorIntegrationTests(TestCase):
 
     def setUp(self):
+        # Create a logged-in user with one completed and one remaining assessment
         self.user = User.objects.create_user(
             username="whatifuser",
             password="testpassword123"
@@ -260,6 +272,7 @@ class WhatIfCalculatorIntegrationTests(TestCase):
         )
 
     def test_academic_data_used_in_what_if_scenario(self):
+        # Submit an expected mark through the complete What-if request flow
         response = self.client.post(
             reverse("academics:what_if_calculator"),
             {
@@ -272,10 +285,12 @@ class WhatIfCalculatorIntegrationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+        # Confirm the view completed the scenario calculation
         self.assertTrue(
             response.context["scenario_calculated"]
         )
 
+        # Check the actual, expected and combined grade contributions
         self.assertEqual(
             response.context["actual_contribution"],
             Decimal("24.00")
@@ -291,6 +306,7 @@ class WhatIfCalculatorIntegrationTests(TestCase):
             Decimal("72.00")
         )
 
+        # Confirm that the projected grade meets the selected target
         self.assertEqual(
             response.context["scenario_status"],
             "target_met"

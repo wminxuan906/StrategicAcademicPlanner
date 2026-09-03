@@ -12,6 +12,7 @@ from .forms import (
 @login_required(login_url="/accounts/login/")
 def semester_list(request):
 
+    # Get semesters that belong to the current user
     semesters = Semester.objects.filter(
         user=request.user
     )
@@ -29,6 +30,7 @@ def semester_list(request):
 @login_required(login_url="/accounts/login/")
 def semester_create(request):
 
+    # Process the submitted form and assign the current user
     if request.method == "POST":
 
         form = SemesterForm(request.POST)
@@ -45,6 +47,7 @@ def semester_create(request):
 
     else:
 
+        # Display an empty form on the initial GET request
         form = SemesterForm()
 
 
@@ -59,6 +62,7 @@ def semester_create(request):
 
 @login_required(login_url="/accounts/login/")
 def semester_update(request, semester_id):
+    # Only retrieve a semester that belongs to the current user
     semester = get_object_or_404(
         Semester,
         id=semester_id,
@@ -66,6 +70,7 @@ def semester_update(request, semester_id):
     )
 
     if request.method == "POST":
+        # Update the existing semester with the submitted data
         form = SemesterForm(request.POST, instance=semester)
 
         if form.is_valid():
@@ -73,6 +78,7 @@ def semester_update(request, semester_id):
             return redirect("academics:semester_list")
 
     else:
+        # Display the form with the existing semester data
         form = SemesterForm(instance=semester)
 
     return render(
@@ -87,6 +93,7 @@ def semester_update(request, semester_id):
 
 @login_required(login_url="/accounts/login/")
 def semester_delete(request, semester_id):
+    # Only retrieve a semester that belongs to the current user
     semester = get_object_or_404(
         Semester,
         id=semester_id,
@@ -94,6 +101,7 @@ def semester_delete(request, semester_id):
     )
 
     if request.method == "POST":
+        # Delete only after the confirmation form is submitted
         semester.delete()
         return redirect("academics:semester_list")
 
@@ -108,12 +116,14 @@ def semester_delete(request, semester_id):
 
 @login_required(login_url="/accounts/login/")
 def module_list(request):
+    # Get modules through semesters that belong to the current user
     modules = Module.objects.filter(
         semester__user=request.user
     ).select_related("semester")
 
     semester_id = request.GET.get("semester")
 
+    # Optionally filter the list by the selected semester
     if semester_id:
         modules = modules.filter(
             semester_id=semester_id,
@@ -132,6 +142,7 @@ def module_list(request):
 
 @login_required(login_url="/accounts/login/")
 def module_create(request):
+    # Pass the current user so the form only shows their semesters
     if request.method == "POST":
         form = ModuleForm(
             request.POST,
@@ -159,6 +170,7 @@ def module_create(request):
 
 @login_required(login_url="/accounts/login/")
 def module_update(request, module_id):
+    # Only retrieve a module from the current user's semesters
     module = get_object_or_404(
         Module,
         id=module_id,
@@ -166,6 +178,7 @@ def module_update(request, module_id):
     )
 
     if request.method == "POST":
+        # Bind the submitted data to the existing module
         form = ModuleForm(
             request.POST,
             instance=module,
@@ -177,6 +190,7 @@ def module_update(request, module_id):
             return redirect("academics:module_list")
 
     else:
+        # Display the form with the existing module data
         form = ModuleForm(
             instance=module,
             user=request.user
@@ -195,6 +209,7 @@ def module_update(request, module_id):
 
 @login_required(login_url="/accounts/login/")
 def module_delete(request, module_id):
+    # Only retrieve a module from the current user's semesters
     module = get_object_or_404(
         Module,
         id=module_id,
@@ -202,6 +217,7 @@ def module_delete(request, module_id):
     )
 
     if request.method == "POST":
+        # Delete only after the confirmation form is submitted
         module.delete()
         return redirect("academics:module_list")
 
@@ -218,6 +234,7 @@ def module_delete(request, module_id):
 @login_required(login_url="/accounts/login/")
 def assessment_list(request):
 
+    # Get assessments through modules and semesters owned by the current user
     assessments = Assessment.objects.filter(
         module__semester__user=request.user
     ).select_related(
@@ -227,6 +244,7 @@ def assessment_list(request):
 
     module_id = request.GET.get("module")
 
+    # Optionally filter the list by the selected module
     if module_id:
 
         assessments = assessments.filter(
@@ -247,6 +265,7 @@ def assessment_list(request):
 @login_required(login_url="/accounts/login/")
 def assessment_create(request):
 
+    # Pass the current user so the form only shows their modules
     if request.method == "POST":
 
         form = AssessmentForm(
@@ -279,6 +298,7 @@ def assessment_create(request):
 @login_required(login_url="/accounts/login/")
 def assessment_update(request, assessment_id):
 
+    # Only retrieve an assessment that belongs to the current user
     assessment = get_object_or_404(
         Assessment,
         id=assessment_id,
@@ -287,6 +307,7 @@ def assessment_update(request, assessment_id):
 
     if request.method == "POST":
 
+        # Bind the submitted data to the existing assessment
         form = AssessmentForm(
             request.POST,
             instance=assessment,
@@ -301,6 +322,7 @@ def assessment_update(request, assessment_id):
 
     else:
 
+        # Display the form with the existing assessment data
         form = AssessmentForm(
             instance=assessment,
             user=request.user,
@@ -320,6 +342,7 @@ def assessment_update(request, assessment_id):
 @login_required(login_url="/accounts/login/")
 def assessment_delete(request, assessment_id):
 
+    # Only retrieve an assessment that belongs to the current user
     assessment = get_object_or_404(
         Assessment,
         id=assessment_id,
@@ -328,6 +351,7 @@ def assessment_delete(request, assessment_id):
 
     if request.method == "POST":
 
+        # Delete only after the confirmation form is submitted
         assessment.delete()
 
         return redirect("academics:assessment_list")
@@ -343,6 +367,7 @@ def assessment_delete(request, assessment_id):
 
 @login_required(login_url="/accounts/login/")
 def grade_tracking(request):
+    # Get the current user's modules and their assessments efficiently
     modules = (
         Module.objects
         .filter(semester__user=request.user)
@@ -364,6 +389,7 @@ def grade_tracking(request):
 
 @login_required(login_url="/accounts/login/")
 def what_if_calculator(request):
+    # Set default values so the page can be displayed before a calculation
     selected_module = None
     target_grade = None
     assessments = []
@@ -384,13 +410,16 @@ def what_if_calculator(request):
     scenario_errors = []
     calculation_breakdown = []
 
+    # Process either the load-module or calculate-scenario action
     if request.method == "POST":
+        # Bind the submitted data and limit module choices to the current user
         form = WhatIfCalculatorForm(
             request.POST,
             user=request.user,
         )
 
         if form.is_valid():
+            # Get the selected module, optional target and clicked button
             selected_module = form.cleaned_data["module"]
             submitted_target = form.cleaned_data["target_grade"]
             action = request.POST.get("action")
@@ -400,10 +429,12 @@ def what_if_calculator(request):
             else:
                 target_grade = selected_module.target_grade
 
+            # Get the contribution already earned from actual saved marks
             actual_contribution = (
                 selected_module.current_contribution
             )
 
+            # Load the selected module's assessments in a consistent order
             assessments = list(
                 selected_module.assessments
                 .all()
@@ -413,6 +444,7 @@ def what_if_calculator(request):
                 )
             )
 
+            # Assessments without a raw score are available for the scenario
             remaining_assessments = [
                 assessment
                 for assessment in assessments
@@ -425,6 +457,7 @@ def what_if_calculator(request):
                 if assessment.raw_score is not None
             )
 
+            # Identify both published and not-yet-added assessment weight
             published_weight = sum(
                 (assessment.weight for assessment in assessments),
                 Decimal("0"),
@@ -437,6 +470,7 @@ def what_if_calculator(request):
 
             confirmed_weight = Decimal("0")
 
+            # Add completed assessments to the calculation breakdown
             for assessment in assessments:
                 assessment.scenario_mark = None
                 assessment.scenario_maximum_score = (
@@ -459,6 +493,7 @@ def what_if_calculator(request):
                     }
                 )
 
+            # Load the module and show expected-mark inputs without calculating
             if action == "load_module":
                 form = WhatIfCalculatorForm(
                     user=request.user,
@@ -467,11 +502,13 @@ def what_if_calculator(request):
                     },
                 )
 
+            # Validate expected marks and calculate the selected scenario
             if action == "calculate_scenario":
                 if target_grade is None:
                     scenario_errors.append(
                         "Enter a target grade for this scenario."
                     )
+                # Dynamic input names match expected_<assessment_id> in the template
                 for assessment in remaining_assessments:
                     entered_value = request.POST.get(
                         f"expected_{assessment.id}",
@@ -483,6 +520,7 @@ def what_if_calculator(request):
 
                     assessment.scenario_mark = entered_value
 
+                    # Convert and validate each expected mark on the server
                     try:
                         expected_mark = Decimal(entered_value)
 
@@ -521,11 +559,13 @@ def what_if_calculator(request):
 
                     assessment.scenario_mark = expected_mark
 
+                    # Convert the expected mark to a percentage
                     expected_percentage = (
                         expected_mark
                         / maximum_score
                     ) * Decimal("100")
 
+                    # Apply the assessment weight to get its scenario contribution
                     contribution = (
                         expected_percentage
                         * assessment.weight
@@ -546,6 +586,7 @@ def what_if_calculator(request):
                         }
                     )
 
+                # Only produce a projected grade when all entered values are valid
                 if not scenario_errors:
                     projected_grade = (
                         actual_contribution
@@ -559,6 +600,7 @@ def what_if_calculator(request):
                         Decimal("0"),
                     )
 
+                    # Avoid presenting missing or unpublished weight as a final result
                     if unentered_published_weight > Decimal("0"):
                         scenario_status = "incomplete"
                         gap_to_target = None
@@ -579,10 +621,12 @@ def what_if_calculator(request):
                     scenario_calculated = True
 
     else:
+        # Display an empty user-specific form on the initial GET request
         form = WhatIfCalculatorForm(
             user=request.user,
         )
 
+    # Pass the inputs, calculation results and status to the template
     return render(
         request,
         "academics/what_if_calculator.html",

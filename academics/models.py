@@ -6,6 +6,7 @@ from django.db import models
 
 
 class Semester(models.Model):
+    # Each semester belongs to one user
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -17,6 +18,7 @@ class Semester(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        # Prevent the same user from creating the same semester twice
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "name", "academic_year"],
@@ -29,6 +31,7 @@ class Semester(models.Model):
 
 
 class Module(models.Model):
+    # Each module belongs to one semester
     semester = models.ForeignKey(
         Semester, 
         on_delete=models.CASCADE, 
@@ -50,6 +53,7 @@ class Module(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        # Keep each module code unique within the same semester
         constraints = [
             models.UniqueConstraint(
                 fields=["semester", "module_code"],
@@ -59,6 +63,7 @@ class Module(models.Model):
 
     @property
     def total_assessment_weight(self):
+        # Add the weights of all assessments currently stored for the module
         return sum(
             (
                 assessment.weight
@@ -69,6 +74,7 @@ class Module(models.Model):
 
     @property
     def completed_weight(self):
+        # Add the weights of assessments that have a recorded raw score
         return sum(
             (
                 assessment.weight
@@ -80,6 +86,7 @@ class Module(models.Model):
 
     @property
     def known_remaining_weight(self):
+        # Add the weights of stored assessments that do not have a mark yet
         return sum(
             (
                 assessment.weight
@@ -91,6 +98,7 @@ class Module(models.Model):
 
     @property
     def unannounced_weight(self):
+        # Calculate assessment weight that has not yet been added to the system
         return max(
             Decimal("100") - self.total_assessment_weight,
             Decimal("0"),
@@ -98,6 +106,7 @@ class Module(models.Model):
 
     @property
     def remaining_weight(self):
+        # Calculate the full module weight that has not yet been completed
         return max(
             Decimal("100") - self.completed_weight,
             Decimal("0"),
@@ -105,6 +114,7 @@ class Module(models.Model):
 
     @property
     def current_contribution(self):
+        # Add the weighted contributions from all graded assessments
         return sum(
             (
                 assessment.weighted_contribution
@@ -115,12 +125,14 @@ class Module(models.Model):
         )
 
     def required_average_for(self, target_grade):
+        # A target and remaining assessment weight are required for this result
         if target_grade is None:
             return None
 
         if self.remaining_weight == Decimal("0"):
             return None
 
+        # Calculate the average needed across the remaining assessment weight
         return (
             (
                 target_grade
@@ -129,34 +141,12 @@ class Module(models.Model):
             / self.remaining_weight
         ) * Decimal("100")
 
-    def target_status_for(self, target_grade):
-        if target_grade is None:
-            return "no_target"
-
-        if self.remaining_weight == Decimal("0"):
-            if self.current_contribution >= target_grade:
-                return "achieved"
-
-            return "not_achieved"
-
-        required_average = self.required_average_for(target_grade)
-
-        if required_average <= Decimal("0"):
-            return "achieved"
-
-        if required_average > Decimal("100"):
-            return "not_achievable"
-
-        if required_average >= Decimal("80"):
-            return "challenging"
-
-        return "achievable"
-
     def __str__(self):
         return f"{self.module_code} - {self.module_name}"
 
 
 class Assessment(models.Model):
+    # Fixed choices keep assessment data consistent across forms and views
     COURSEWORK = "Coursework"
     QUIZ = "Quiz"
     LAB = "Lab"
@@ -195,6 +185,7 @@ class Assessment(models.Model):
         (HIGH, "High")
     ]
 
+    # Each assessment belongs to one module
     module = models.ForeignKey(
         Module, 
         on_delete=models.CASCADE, 
@@ -229,6 +220,7 @@ class Assessment(models.Model):
 
     @property
     def percentage_score(self):
+        # Convert the raw mark into a percentage of the maximum score
         if self.raw_score is None or not self.maximum_score:
             return None
 
@@ -236,6 +228,7 @@ class Assessment(models.Model):
 
     @property
     def weighted_contribution(self):
+        # Apply the assessment weight to its percentage score
         percentage = self.percentage_score
 
         if percentage is None:
@@ -245,6 +238,7 @@ class Assessment(models.Model):
 
     @property
     def is_graded(self):
+        # A recorded raw score identifies a graded assessment
         return self.raw_score is not None
     
     def __str__(self):
