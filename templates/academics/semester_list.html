@@ -60,7 +60,7 @@ Semesters
             <div class="d-flex gap-2">
 
 
-                <a href="#"
+                <a href="{% url 'academics:module_list' %}?semester={{ semester.id }}"
                     class="sap-btn sap-btn-primary">
                     View Modules
                 </a>
